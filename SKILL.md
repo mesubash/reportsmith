@@ -62,3 +62,22 @@ Rules:
 ## 4. Preview
 
 Show the final report. Ask whether to change anything or output it. Apply edits and show it again until the user is happy.
+
+## Sources
+
+### git
+
+For each path in `sources.git.repos` (expand globs and `~`; skip anything that is not a git repo; default: current repo):
+
+```sh
+git -C <repo> log --all --no-merges \
+  --author="<author>" --since="<from>" --until="<to>" \
+  --date=short --pretty='%h|%ad|%s'
+```
+
+- `<author>`: `sources.git.author`, or `git config user.email` when `auto`.
+- Read the commit body (`git show -s --format=%B <hash>`) only when the subject is too vague to report.
+- Ticket IDs in subjects or branch names (`ABC-123`, `#42`) link commits to the same item.
+- **changelog:** use the range instead, all authors:
+  `git -C <repo> log --no-merges --pretty='%h|%s' <last-tag>..HEAD`
+  (`<last-tag>` = `git describe --tags --abbrev=0`; no tags → ask for a range.) Drop chore, CI and merge-only commits unless the user asks for them.
