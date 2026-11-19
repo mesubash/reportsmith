@@ -6,7 +6,7 @@ reportsmith is an open [Agent Skill](https://agentskills.io) (`SKILL.md`) for **
 
 No server, no database, no tracking: it runs when you ask, makes a report, and stops.
 
-> **Status:** private pre-release, v0.2.1.
+> **Status:** v0.2.1, early release. Feedback and recipes for more tools are welcome.
 
 ## Why
 
