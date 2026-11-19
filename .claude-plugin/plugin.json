@@ -1,0 +1,13 @@
+{
+  "name": "reportsmith",
+  "version": "0.2.0",
+  "description": "Work reports (standup, daily, weekly, monthly, changelog, release notes) from git and your coding agents' sessions in a folder, for any period, published through MCP.",
+  "author": {
+    "name": "Subash Singh Dhami",
+    "url": "https://github.com/mesubash"
+  },
+  "homepage": "https://github.com/mesubash/reportsmith",
+  "repository": "https://github.com/mesubash/reportsmith",
+  "license": "MIT",
+  "keywords": ["reports", "standup", "worklog", "changelog", "release-notes", "mcp"]
+}

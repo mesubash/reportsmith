@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "reportsmith",
+  "description": "Work reports from git and coding-agent sessions.",
+  "owner": {
+    "name": "Subash Singh Dhami",
+    "url": "https://github.com/mesubash"
+  },
+  "plugins": [
+    {
+      "name": "reportsmith",
+      "description": "Standups, daily logs, weekly and monthly reports, changelogs and release notes from git and your coding agents' sessions, published through MCP.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

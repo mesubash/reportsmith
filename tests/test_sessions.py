@@ -1,11 +1,11 @@
-"""Self-check for sessions.py: python3 scripts/test_sessions.py"""
+"""Self-check for sessions.py: python3 tests/test_sessions.py"""
 import json
 import os
 import sys
 import tempfile
 from datetime import datetime, time
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "skills", "reportsmith", "scripts"))
 import sessions as S
 
 tmp = tempfile.mkdtemp()

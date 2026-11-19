@@ -36,28 +36,53 @@ Most real work never reaches a commit: triage, incident handling, server fixes, 
 
 ## Install
 
-reportsmith is a folder with a `SKILL.md`. Put it where your agent looks for skills:
+The skill is the folder `skills/reportsmith/`. Install it whichever way your agent supports.
 
-```sh
-git clone git@github.com:mesubash/reportsmith.git
+**Claude Code (plugin):**
+
+```
+/plugin install reportsmith --marketplace mesubash/reportsmith
 ```
 
-| Agent | Location |
+Older Claude Code versions: `/plugin marketplace add mesubash/reportsmith`, then `/plugin install reportsmith@reportsmith`.
+
+**Any agent with Agent Skills support (Claude Code, Codex, and others):** copy or link the skill folder into the agent's skills directory.
+
+```sh
+git clone https://github.com/mesubash/reportsmith.git
+ln -s "$PWD/reportsmith/skills/reportsmith" ~/.claude/skills/reportsmith   # Claude Code
+ln -s "$PWD/reportsmith/skills/reportsmith" ~/.codex/skills/reportsmith    # Codex
+```
+
+Other agents: use their skills directory (see the agent's docs).
+
+**Agents without skill support:** keep the folder anywhere and add one line to `AGENTS.md`: *"For standups, status reports, changelogs or release notes, follow `<path>/skills/reportsmith/SKILL.md`."*
+
+Requirements: `git`, and `python3` (3.8+, standard library only) for reading agent sessions. `gh` is used for PRs and reviews if installed.
+
+## Use
+
+Ask in plain words:
+
+- *"standup"*
+- *"what did I do yesterday in ~/work/api"*
+- *"weekly report for my manager, last week, short"*
+- *"monthly report for October, scope ~/clients/acme"*
+- *"changelog since v1.2"*, *"release notes for v2.0"*
+- *"daily log, then post it to #eng"* (needs a Slack MCP server and a destination in config)
+
+## Configure
+
+Everything is optional. Copy [`config.example.yml`](skills/reportsmith/config.example.yml) to `~/.reportsmith/config.yml` (global) or `.reportsmith.yml` (one repo) and keep only what you change.
+
+| You want | Set |
 |---|---|
-| Claude Code | `~/.claude/skills/reportsmith/` (all projects) or `.claude/skills/reportsmith/` (one repo) |
-| Codex | `~/.codex/skills/reportsmith/` |
-| Other agents with Agent Skills support | Their skills directory (see the agent's docs) |
-| Agents without skill support | Keep the folder anywhere and add to `AGENTS.md`: *"For standups, status reports or changelogs, follow `<path>/reportsmith/SKILL.md`."* |
-
-Example, Claude Code:
-
-```sh
-git clone git@github.com:mesubash/reportsmith.git ~/.claude/skills/reportsmith
-```
-
-Then ask your agent: *"standup"*, *"weekly report for my manager"*, *"changelog since v1.2"*.
-
-Optional: copy `config.example.yml` to `~/.reportsmith/config.yml` and edit it. Put your own templates in `~/.reportsmith/templates/<kind>.md`.
+| Only count work in some folders | `scope.include`, `scope.exclude` |
+| Reports to sound like you | `style.sample` (your past reports), `style.voice`, `style.rules` |
+| Your own report format | `templates_dir`, or files in `~/.reportsmith/templates/<kind>.md` |
+| Reports saved in your own layout | `reports.<kind>.output` with `{{yyyy}}/{{mm}}/{{dd}}`-style patterns |
+| Reports posted somewhere | `destinations` plus `reports.<kind>.publish` |
+| A new kind of report | Add `templates/<kind>.md`, then ask for it by name |
 
 ## Non-goals
 
