@@ -18,7 +18,7 @@ git -C <repo> log --all --no-merges --author="<author>" \
   --date=short --pretty='%h|%at|%ad|%s'
 ```
 
-- `<author>`: `sources.git.author`, or `git config user.email` when `auto`. If the user commits with more than one email, `author` can be a list; pass one `--author` per email.
+- `<author>`: `sources.git.author`, or when `auto`, the repo's own identity: `git -C <repo> config user.email`. Ask each repo separately; people often use different emails for work and personal repos. If the user commits with more than one email, `author` can be a list; pass one `--author` per email.
 - **Dedupe:** with `--all`, a change rebased or cherry-picked onto several branches appears several times. Same subject and same author time (`%at`) = one item. `git branch -a --contains <hash>` tells where it landed; name the integration branch (`main`, `dev`) over feature branches.
 - Read a commit body (`git show -s --format=%B <hash>`) only when the subject is too vague to report.
 - Ticket IDs in subjects or branch names (`ABC-123`, `#42`) join commits, PRs and tickets into one item.

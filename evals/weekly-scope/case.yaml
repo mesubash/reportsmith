@@ -1,0 +1,41 @@
+schema_version: "1.1"
+name: weekly-scope
+tags: [scope, period, sources]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  runs: 1
+  max_turns: 30
+  timeout_seconds: 500
+  allowed_tools: [Skill, Read, Glob, Grep, "Bash(git:*)", "Bash(python3:*)", "Bash(find:*)", "Bash(date:*)", "Bash(ls:*)"]
+  prompt: |
+    Weekly report for the week of 2026-03-09 (weeks start Monday), for my manager. Scope: the `work` folder here, excluding `work/archive`. Unattended run: don't ask questions, don't save or publish anything, just print the report.
+graders:
+  - name: used-skill
+    type: tool_used
+    tool: Skill
+  - name: has-api-items
+    type: regex
+    pattern: "API-4[\\s\\S]*API-5|API-5[\\s\\S]*API-4"
+    match: contains
+  - name: has-web-item
+    type: regex
+    pattern: "WEB-2"
+    match: contains
+  - name: has-codex-session-work
+    type: regex
+    pattern: "index|0\\.4 ?s|dashboard"
+    flags: i
+    match: contains
+  - name: no-em-dash
+    type: regex
+    pattern: "—"
+    match: not_contains
+  - name: scope-and-period-respected
+    type: llm
+    criteria: |
+      The header states the range 2026-03-09 to 2026-03-15 (weekday names are optional).
+      It reports API-4, API-5, WEB-2 and the dashboard index fix as work done that week.
+      It does NOT report as work: API-1 (previous week), OLD-9 or the legacy report migration (excluded folder), the sourdough post or the blog theme change (side project outside the scope). Mentioning them only as left out is fine.
+      It is written for a manager: outcomes, no file paths, no commit hashes required.
+      Nothing is invented beyond the fixture. Restating what a source says counts as sourced: for example, calling the dashboard fix staging-only or not yet in production is fine, because the session says it was done in staging. Notes after the report about how the run went are not part of the report.

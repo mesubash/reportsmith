@@ -9,7 +9,7 @@ claude plugin eval . --scaffold --trust-plugin --ablation none \
 
 - `--scaffold` is needed to build the fixtures. Read `scaffold.sh` before running it; it only creates files in the run's temporary workspace and home.
 - `--allow-tools` grants the shell commands the skill uses. Without it the agent can't run `git`.
-- Each run calls the model and costs money (about $0.25 per case per run). They are not part of CI.
+- Each run calls the model and costs money (about $0.25 to $0.30 per case per run). They are not part of CI.
 - On macOS the eval sandbox can block `git` (xcrun can't write its cache). The skill then falls back to reading `.git/logs`, which still works for these fixtures. Linux runs `git` normally.
 
 Regex graders check facts that must appear (ticket IDs, outcomes) or must never appear (em dashes). Anything that depends on context, such as "not reported as done" or "only mentioned as left out", goes to the LLM grader.

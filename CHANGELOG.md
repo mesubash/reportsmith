@@ -4,6 +4,15 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Fixed
+- Shell commands are run one per call. Chained commands (`cd …; git …`) were refused by permission allowlists, which broke unattended runs.
+- The git author is looked up per repo, so separate work and personal emails both work.
+- Risks, blockers and next steps are reported only when a source states them.
+- An item appears in one section only; weekly highlights are a one-line summary instead of repeated bullets.
+
+### Added
+- Second end-to-end eval: folder scope over a week (included and excluded folders, a side project outside the scope, a Codex session with no commit).
+
 ## [0.2.0] - 2026-11-19
 
 ### Added

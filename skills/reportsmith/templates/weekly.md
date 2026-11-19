@@ -2,7 +2,7 @@
 # Weekly update, {{period}}
 
 ## Highlights
-<!-- One to three outcomes that matter most this week. -->
+<!-- One or two sentences naming the outcomes that matter most this week. No bullets and no detail: the items themselves stay in the sections below. -->
 
 ## Done
 <!-- Ticketed work, grouped by theme. Cite ticket IDs. -->

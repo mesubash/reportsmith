@@ -79,6 +79,8 @@ Only repos and agent sessions under `include`, and not under `exclude`, count. T
 
 Read every available source for the period and scope; `sources.md` says how. Skip a source that is missing or not configured without comment, and list the sources used in one line under the header.
 
+**Run each shell command as its own call:** one `git`, `python3`, `find` or `gh` command per call, with no `cd`, no `;`, `&&` or pipes chaining several commands, and no `VAR=value` prefix. Use `git -C <repo>` and absolute paths instead of changing directory. Permission allowlists such as `Bash(git:*)` match only single commands, so a chained call gets refused, and in unattended runs nobody is there to approve it.
+
 | Source | Gives |
 |---|---|
 | git | commits in every repo under the scope |
@@ -97,9 +99,9 @@ Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmit
 
 Rules:
 
-- **Never invent.** Every line traces to a gathered source. Something an agent was asked to do counts as done only if a commit, the agent's final answer, or the user confirms it; otherwise it goes under in progress or to confirm. Unsure: leave it out or ask.
+- **Never invent.** Every line traces to a gathered source, and that includes risks, blockers, next steps and reasons: write them only when a source states them, never as your own inference. Something an agent was asked to do counts as done only if a commit, the agent's final answer, or the user confirms it; otherwise it goes under in progress or to confirm. Unsure: leave it out or ask.
 - **Outcomes over activity.** "Fixed login timeout for mobile users", not "changed auth.ts".
-- **One item per piece of work.** A session, its commits, its PR and its ticket are one item. Cite the ticket ID and commit once.
+- **One item per piece of work.** A session, its commits, its PR and its ticket are one item. Cite the ticket ID and commit once. Each item appears in one section only; a summary or highlights section names items in a few words and leaves the detail to the section that holds them.
 - **Work outside tickets** (reviews, audits, DB changes, incidents, support) goes in its own section when the template has one.
 - **Audience.** `manager`: outcomes, risks, decisions needed; no code or file names. `team`: plus useful technical detail. `public`: user-facing wording, no internal names. `self`: everything.
 - Drop empty sections. Convert to the requested format last.
