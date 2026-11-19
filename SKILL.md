@@ -37,7 +37,14 @@ Collect raw material for the period from every available source (section "Source
 
 ## 3. Draft
 
-Fill the template for the kind. Rules:
+Fill the template for the kind. Template lookup, first found wins:
+
+1. `~/.reportsmith/templates/<kind>.md` (user's own)
+2. `templates/<kind>.md` in this skill's folder
+
+Templates are plain markdown. `{{date}}`, `{{period}}` and `{{version}}` are placeholders; `<!-- comments -->` are guidance for you and are removed from the output. A kind with no template: use the `weekly.md` structure and tell the user they can add one.
+
+Rules:
 
 - **Never invent.** Every line must trace to a gathered source. If unsure, leave it out or ask.
 - **Outcomes over activity.** "Fixed login timeout for mobile users" beats "changed auth.ts".
