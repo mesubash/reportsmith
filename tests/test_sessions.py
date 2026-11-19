@@ -101,3 +101,13 @@ assert o[0]["files"] == {os.path.join(work, "auth.ts"), os.path.join(work, "sess
 assert o[0]["answer"] == "Timeout raised to 30s."
 assert S.read_opencode(os.path.join(tmp, "missing.db"), lo, hi) == []
 print("ok opencode")
+
+# Discord payload limits.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "skills", "reportsmith", "scripts"))
+import discord as D
+assert D.payload("short report") == {"content": "short report"}
+big = D.payload("**Weekly**\n" + "x" * 3000)
+assert big["embeds"][0]["title"] == "Weekly" and len(big["embeds"][0]["description"]) == 3000
+huge = D.payload("Weekly\n" + ("line\n" * 2000))
+assert len(huge["embeds"][0]["description"]) <= D.EMBED_MAX and "cut" in huge["embeds"][0]["description"]
+print("ok discord")

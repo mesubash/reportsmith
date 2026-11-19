@@ -7,7 +7,7 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 ### Added
 - opencode session reader (reads its SQLite store read-only).
 - Publishing through any connected MCP server, a webhook or a shell command, with dry run, confirmation, and update-instead-of-duplicate.
-- Destination recipes for Slack, Notion, GitHub and Plane, plus a generic recipe for any MCP server.
+- Destination recipes for Slack, Notion, GitHub, Plane, Google Drive and Discord, plus a generic recipe for any MCP server.
 - Sources: PRs and reviews via `gh`, tickets via any issue-tracker MCP, and a plain notes file for work no tool saw.
 - Templates: daily, monthly, release-notes, brag and incident.
 - Writing rules that keep reports in plain human wording, plus `style.sample`, `style.voice` and `style.rules` to match the user's own style.
