@@ -7,9 +7,19 @@ description: Write work reports (standup, weekly, changelog, or a custom kind) f
 
 Report maker. Gathers what the user did in a period, renders it with a template, shows a preview, and outputs it. It does not track or store anything between runs.
 
+## 0. Load config
+
+Read whichever of these exist; later ones override earlier ones key by key:
+
+1. Defaults below and in `config.example.yml` (this skill's folder)
+2. `~/.reportsmith/config.yml`
+3. `.reportsmith.yml` in the current repo root
+
+No config at all is fine: use the defaults. An unknown key: ignore it and mention it once.
+
 ## 1. Parse the request
 
-Work out each field from the user's words first, then config, then the defaults below:
+Work out each field from the user's words first, then `reports.<kind>` in config, then the defaults below:
 
 | Field | Default |
 |---|---|

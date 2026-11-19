@@ -1,0 +1,29 @@
+# reportsmith config — every key is optional.
+# Global:   ~/.reportsmith/config.yml
+# Per repo: .reportsmith.yml (overrides global, key by key)
+
+prefs:
+  timezone: local            # IANA name, e.g. Asia/Kathmandu
+  week_starts: monday        # monday | sunday
+  language: en
+
+sources:
+  git:
+    repos: [.]               # paths or globs, e.g. ~/code/*
+    author: auto             # auto = `git config user.email`
+
+reports:
+  standup:
+    audience: team           # manager | team | public | self
+    format: slack            # markdown | slack | email | plain
+    length: short            # short | medium | long
+  weekly:
+    audience: manager
+    format: markdown
+    length: medium
+  changelog:
+    audience: public
+    style: keep-a-changelog  # keep-a-changelog | prose
+
+output:
+  dir: ~/.reportsmith/out    # <kind>-<period>.md is written here
