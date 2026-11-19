@@ -1,5 +1,5 @@
 <!-- Daily log, mostly for the user. Facts and decisions, with ticket IDs and commit hashes. Items not confirmed done go under "In progress / to confirm". -->
-# {{date}} · {{scope}}
+# {{period}} · {{scope}}
 
 ## Done
 

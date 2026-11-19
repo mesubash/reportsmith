@@ -1,5 +1,5 @@
 <!-- Incident summary. Blameless. Times in the user's timezone. Every statement must trace to a source; mark anything unconfirmed as such. -->
-# Incident: {{title}}, {{date}}
+# Incident: {{title}}, {{period}}
 
 ## Impact
 <!-- Who was affected, how, and for how long. -->

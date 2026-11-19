@@ -41,7 +41,12 @@ Default period per kind: standup = last working day and today · daily = today �
 
 ### Period
 
-Resolve the user's words to an inclusive `from`/`to` date range in `prefs.timezone`:
+Resolve the user's words to an inclusive `from`/`to` date range in `prefs.timezone`. Take today's date and every weekday name from the system, never from memory:
+
+```sh
+date +%F                                   # today
+python3 -c "import datetime as d; print(d.date.fromisoformat('2026-11-18').strftime('%a'))"   # weekday of a date
+```
 
 | User says | Range |
 |---|---|
@@ -88,7 +93,7 @@ Read every available source for the period and scope; `sources.md` says how. Ski
 
 ## 4. Draft
 
-Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmith/templates/<kind>.md` · `templates/<kind>.md` here. A kind with no template: use the `weekly.md` structure and say the user can add one. Placeholders are `{{date}}`, `{{period}}`, `{{scope}}`, `{{version}}` and `{{title}}`. Prose instructions and `<!-- comments -->` in a template are for you; don't copy them into the output.
+Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmith/templates/<kind>.md` · `templates/<kind>.md` here. A kind with no template: use the `weekly.md` structure and say the user can add one. Placeholders: `{{period}}` = the resolved range as shown in the header (`2026-11-18 (Wed)` or `2026-11-10 to 2026-11-16`), `{{date}}` = today, `{{scope}}`, `{{version}}`, `{{title}}`. Prose instructions and `<!-- comments -->` in a template are for you; don't copy them into the output.
 
 Rules:
 
