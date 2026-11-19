@@ -87,7 +87,7 @@ Show the final report. Ask whether to change anything or output it. Apply edits 
 
 ### git
 
-For each path in `sources.git.repos` (expand globs and `~`; skip anything that is not a git repo; default: current repo):
+For each path in `sources.git.repos` (expand globs and `~`; skip anything that is not a git repo; default: current repo). Worktrees of one repo share history: group paths by `git rev-parse --git-common-dir` and query each group once.
 
 ```sh
 git -C <repo> log --all --no-merges \
@@ -102,6 +102,14 @@ git -C <repo> log --all --no-merges \
 - **changelog:** use the range instead, all authors:
   `git -C <repo> log --no-merges --pretty='%h|%s' <last-tag>..HEAD`
   (`<last-tag>` = `git describe --tags --abbrev=0`; no tags → ask for a range.) Drop chore, CI and merge-only commits unless the user asks for them.
+
+### Agent memory
+
+If a memory or session-history tool is available (an MCP server such as claude-mem, or the agent's own session logs), search it for the period. This is where most work outside git lives: triage, audits, investigations, tickets created, decisions, deploys.
+
+- Use observations and session summaries, not raw prompts.
+- A memory entry about the same change as a commit is one item: prefer the commit for the fact and the memory for the context.
+- Memory says a task was started but not its result: report it as started or investigated, never as done.
 
 ## 5. Output
 
