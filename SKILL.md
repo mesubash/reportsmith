@@ -92,10 +92,11 @@ For each path in `sources.git.repos` (expand globs and `~`; skip anything that i
 ```sh
 git -C <repo> log --all --no-merges \
   --author="<author>" --since="<from>" --until="<to>" \
-  --date=short --pretty='%h|%ad|%s'
+  --date=short --pretty='%h|%at|%ad|%s'
 ```
 
 - `<author>`: `sources.git.author`, or `git config user.email` when `auto`.
+- **Dedupe:** `--all` shows the same change once per branch it was rebased or cherry-picked onto. Treat commits with the same subject and author time (`%at`) as one item. To say where it landed, `git branch -a --contains <hash>`; prefer the integration branch (`main`, `dev`) over feature branches.
 - Read the commit body (`git show -s --format=%B <hash>`) only when the subject is too vague to report.
 - Ticket IDs in subjects or branch names (`ABC-123`, `#42`) link commits to the same item.
 - **changelog:** use the range instead, all authors:
