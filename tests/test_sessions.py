@@ -111,3 +111,18 @@ assert big["embeds"][0]["title"] == "Weekly" and len(big["embeds"][0]["descripti
 huge = D.payload("Weekly\n" + ("line\n" * 2000))
 assert len(huge["embeds"][0]["description"]) <= D.EMBED_MAX and "cut" in huge["embeds"][0]["description"]
 print("ok discord")
+
+# Traffic archive: newer numbers replace a date, older dates are kept.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".github", "scripts"))
+import traffic as T
+p = os.path.join(tmp, "daily.csv")
+H = ["date", "clones", "unique_clones", "views", "unique_views"]
+T.merge(p, ["date"], H, [{"date": "2026-01-01", "clones": 1, "unique_clones": 1, "views": 2, "unique_views": 1}])
+T.merge(p, ["date"], H, [{"date": "2026-01-01", "clones": 5, "unique_clones": 3, "views": 9, "unique_views": 4},
+                         {"date": "2026-01-02", "clones": 0, "unique_clones": 0, "views": 1, "unique_views": 1}])
+import csv as _csv
+rows = list(_csv.DictReader(open(p)))
+assert [r["date"] for r in rows] == ["2026-01-01", "2026-01-02"] and rows[0]["clones"] == "5", rows
+d = T.daily({"clones": [{"timestamp": "2026-01-03T00:00:00Z", "count": 2, "uniques": 1}]}, {"views": []})
+assert d == [{"date": "2026-01-03", "clones": 2, "unique_clones": 1, "views": 0, "unique_views": 0}]
+print("ok traffic")
