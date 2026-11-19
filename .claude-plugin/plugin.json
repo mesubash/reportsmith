@@ -1,6 +1,6 @@
 {
   "name": "reportsmith",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Work reports (standup, daily, weekly, monthly, changelog, release notes) from git and your coding agents' sessions in a folder, for any period, published through MCP.",
   "author": {
     "name": "Subash Singh Dhami",
