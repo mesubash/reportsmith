@@ -47,6 +47,8 @@ claude plugin validate .    # if you have Claude Code
 
 CI runs the same checks on Linux and macOS.
 
+Changes to `SKILL.md`, `sources.md` or the templates should also pass the end-to-end evals in `evals/` (they call the model, so they are not in CI). See `evals/README.md`. A new behaviour is best covered by a new case: a fixture in `scaffold.sh` and graders in `case.yaml`.
+
 ## Commits and PRs
 
 One change per commit, imperative subject, and a body that says why. Reference the issue (`Closes #12`).

@@ -15,6 +15,7 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 - Redaction before drafting, with extra patterns from config.
 - Unattended runs for cron and CI.
 - Claude Code plugin packaging.
+- End-to-end eval (`claude plugin eval`): a fixture repo and agent session for one day, graded on sources, period, dedupe and honesty.
 
 ### Changed
 - The skill moved to `skills/reportsmith/`. Reinstall or update your symlink.
