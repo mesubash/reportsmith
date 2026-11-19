@@ -7,6 +7,10 @@ prefs:
   week_starts: monday        # monday | sunday
   language: en
 
+limits:
+  max_days: 92               # ask before reporting on a longer range
+  max_items: 40              # above this, summarize by week/month instead of listing
+
 sources:
   git:
     repos: [.]               # paths or globs, e.g. ~/code/*
