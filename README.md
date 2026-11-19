@@ -1,10 +1,10 @@
 # reportsmith
 
-An agent skill that writes your work reports — standups, weekly and monthly updates, changelogs, release notes — from your git history, PRs, reviews, tickets and notes, then publishes them wherever your agent can reach through MCP.
+An agent skill that writes your work reports (standups, daily logs, weekly and monthly updates, changelogs, release notes) from everything you did in a folder: git commits **and the sessions of every coding agent you used there**. Then it publishes them wherever your agent can reach through MCP.
 
 Works with any agent that supports the open `SKILL.md` skill format (Claude Code, Codex, and others). No server, no database, no tracking: it runs when you ask, makes a report, and stops.
 
-> **Status:** pre-release, private. Building toward v0.1.
+> **Status:** v0.1 (private). Publishing through MCP is next.
 
 ## Why
 
@@ -13,16 +13,22 @@ Tickets show only part of the work. Code reviews, audits, database fixes, incide
 ## What it does
 
 ```
-sources                    render                     publish
-───────                    ──────                     ───────
-git log (any repos)   ─┐                          ┌─► file (default)
-PRs + reviews (gh)    ─┼─► template + config  ─►  ├─► any MCP tool: Slack, Notion,
-tickets (MCP)         ─┤    preview / confirm     │    Confluence, Jira, Linear, Plane, …
-your notes            ─┤                          ├─► webhook
-conversation          ─┘                          └─► shell command (e.g. gh release)
+scope: ~/work, any period
+sources                         render                     publish
+───────                         ──────                     ───────
+git (every repo in scope)  ─┐                          ┌─► file (default)
+agent sessions in scope    ─┤                          ├─► any MCP tool: Slack, Notion,
+  (Claude Code, Codex)      ├─► template + config  ─►  │    Confluence, Jira, Linear, Plane, …
+agent memory (claude-mem)  ─┤    preview / confirm     ├─► webhook
+PRs, tickets, notes        ─┘                          └─► shell command (e.g. gh release)
 ```
 
+Most real work never reaches a commit: triage, incident handling, server fixes, reviews, investigations. It does happen in agent sessions. reportsmith reads the session logs your agents already keep on disk, filtered to the folder you choose, so one report covers work done in Claude Code, Codex, or both.
+
+- **Any scope:** `~/work/` for your job, `~/side-project/` for yourself, one folder per client. Repos under it are found automatically.
+- **Any period:** a day, week, month, quarter, `last 10 days`, or `Nov 1..Nov 15`, with a threshold that switches long ranges to weekly or monthly roll-ups.
 - **Report kinds:** standup, daily, weekly, monthly, changelog, release notes, or your own.
+- **Honest:** never invents items; something an agent was asked to do counts as done only if a commit or the agent's answer confirms it.
 - **Customizable through files only:** templates are markdown, config is YAML, per repo or global.
 - **Works with any destination:** publishing goes through whatever MCP servers you have connected. Adding a destination means adding config, not code.
 - **Private by default:** redaction before preview, nothing published without confirmation unless you turn that off.
