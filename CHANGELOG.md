@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-19
+
 ### Added
 - opencode session reader (reads its SQLite store read-only).
 - Publishing through any connected MCP server, a webhook or a shell command, with dry run, confirmation, and update-instead-of-duplicate.
@@ -36,5 +38,6 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 - Commits copied to several branches or worktrees are counted once.
 - Single-day reports include the whole day.
 
-[Unreleased]: https://github.com/mesubash/reportsmith/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mesubash/reportsmith/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mesubash/reportsmith/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mesubash/reportsmith/releases/tag/v0.1.0
