@@ -22,11 +22,21 @@ sources:
   sessions: auto             # agent session logs under scope (Claude Code, Codex)
   memory: auto               # memory MCP such as claude-mem, if connected
 
+templates_dir: ""            # your own template folder; <kind>.md inside it wins
+
+style:
+  voice: terse               # terse ("Fixed X") | first-person ("I fixed X") | team ("We fixed X")
+  sample: []                 # reports you wrote yourself; output copies their structure and voice
+  rules: ""                  # your own writing-rules file, applied on top of the built-in ones
+
 reports:
   standup:
     audience: team           # manager | team | public | self
     format: slack            # markdown | slack | email | plain
     length: short            # short | medium | long
+  # Any kind can set an output path pattern, e.g.
+  # daily:
+  #   output: ~/worklog/daily/{{yyyy}}/{{mm}}/{{dd}}.md
   weekly:
     audience: manager
     format: markdown

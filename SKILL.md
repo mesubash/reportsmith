@@ -71,8 +71,11 @@ Collect raw material for the period from every available source (section "Source
 
 Fill the template for the kind. Template lookup, first found wins:
 
-1. `~/.reportsmith/templates/<kind>.md` (user's own)
-2. `templates/<kind>.md` in this skill's folder
+1. `<templates_dir>/<kind>.md` if config sets `templates_dir`
+2. `~/.reportsmith/templates/<kind>.md`
+3. `templates/<kind>.md` in this skill's folder
+
+A user template may contain instructions in plain prose (who it is for, what to leave out). Follow them, and don't copy them into the output.
 
 Templates are plain markdown. `{{date}}`, `{{period}}` and `{{version}}` are placeholders; `<!-- comments -->` are guidance for you and are removed from the output. A kind with no template: use the `weekly.md` structure and tell the user they can add one.
 
@@ -90,6 +93,32 @@ Rules:
 - **Length:** `short` ≈ 5 bullets, `medium` ≈ 15, `long` = no cap.
 - Drop empty template sections.
 - Convert to the requested format last (Slack mrkdwn, plain text, email).
+
+### Writing style
+
+People read these reports. Wording that sounds machine-written makes them trust the content less, so write the way a busy engineer writes a status update.
+
+**Voice.** Follow `style.voice` (default `terse`):
+- `terse`: verb first, no subject. "Fixed double charge on card payments."
+- `first-person`: "I fixed…". `team`: "We fixed…".
+
+Past tense for done work, present for ongoing.
+
+**User's own style comes first.** If `style.sample` points to files the user wrote (one path or a list), read them before drafting and match their structure, tags, length, wording, detail and formatting. If `style.rules` points to a rules file, read it and apply it on top of the rules below; where they disagree, the user's file wins. Order of precedence: never invent > style.sample > style.rules > the defaults below.
+
+**Plain words.** Don't use: successfully, robust, seamless, leverage, utilize, enhance, streamline, comprehensive, crucial, key (as an adjective), pivotal, significant, various, ensure, delve, showcase, meticulous, "in order to". Write "is/has", not "serves as / represents / features".
+
+**No inflation.** Don't call something critical, major or important unless an incident, ticket priority or the user said so. Keep the sharp detail (ticket ID, number, name) rather than a general claim.
+
+**No templates.** No "not just X but Y", no lists padded to three items, no opening or closing summary ("Overall…", "In summary…"), no "Additionally", "Moreover" or "Furthermore" at the start of a sentence. No trailing clause that only adds significance (", ensuring…", ", improving…", ", highlighting…"): end the sentence at the fact. No stacked hedges ("may potentially"). Use the same term for the same thing every time.
+
+**Report results, not process.** "Removed the unused legacy payment endpoint", not "Reviewed the codebase and identified an opportunity to remove…". Leave out how the agent worked (tools, searches, retries).
+
+**Formatting.** Bold only for item names at the start of a bullet, if at all. No emoji, no horizontal rules, no tables unless the content is really tabular. Sentence-case headings. No em dashes: use commas, colons, parentheses or full stops. No arrow chains (`A → B → fails`) in place of a sentence.
+
+**No assistant residue.** No "I hope this helps", "Let me know if…", "It's important to note", and no mention of AI unless the user's template asks for it.
+
+Before the preview, reread the draft once: delete any line that loses nothing when removed, and rewrite any sentence that breaks the rules above.
 
 ## 4. Preview
 
@@ -143,7 +172,8 @@ If a memory or session-history tool is available (an MCP server such as claude-m
 
 After the user approves the preview:
 
-- Write the report to `<output.dir>/<kind>-<period>.md` (default dir `~/.reportsmith/out`; create it if missing). Ask before overwriting an existing file.
+- Write the report to `reports.<kind>.output` if set, otherwise `<output.dir>/<kind>-<period>.md` (default dir `~/.reportsmith/out`). Create missing folders. Ask before overwriting an existing file.
+- Output patterns can use `{{kind}}`, `{{from}}`, `{{to}}` (YYYY-MM-DD), `{{yyyy}}`, `{{mm}}`, `{{dd}}` (of `from`), `{{week}}` (ISO week number), `{{Mon}}` (short month name of `from`), `{{to_Mon}}` and `{{to_dd}}`, and any key under `prefs` (e.g. `{{name}}`).
 - Print the path and the report so the user can copy it.
 
 ## 6. Publish

@@ -29,6 +29,7 @@ Most real work never reaches a commit: triage, incident handling, server fixes, 
 - **Any period:** a day, week, month, quarter, `last 10 days`, or `Nov 1..Nov 15`, with a threshold that switches long ranges to weekly or monthly roll-ups.
 - **Report kinds:** standup, daily, weekly, monthly, changelog, release notes, or your own.
 - **Honest:** never invents items; something an agent was asked to do counts as done only if a commit or the agent's answer confirms it.
+- **Reads like you wrote it:** plain wording rules built in, and an optional `style.sample` of your own past reports to copy your voice.
 - **Customizable through files only:** templates are markdown, config is YAML, per repo or global.
 - **Works with any destination:** publishing goes through whatever MCP servers you have connected. Adding a destination means adding config, not code.
 - **Private by default:** redaction before preview, nothing published without confirmation unless you turn that off.
@@ -76,6 +77,10 @@ Tracked as [milestones](../../milestones):
 | v0.4 | Unattended runs: cron, CI and GitHub Action examples |
 | v0.5 | More templates and destination recipes, evals |
 | v1.0 | Stable config schema, docs, public release and directory listings |
+
+## Credits
+
+Writing rules adapted from [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing).
 
 ## License
 
