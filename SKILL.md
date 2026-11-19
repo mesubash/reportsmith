@@ -145,3 +145,41 @@ After the user approves the preview:
 
 - Write the report to `<output.dir>/<kind>-<period>.md` (default dir `~/.reportsmith/out`; create it if missing). Ask before overwriting an existing file.
 - Print the path and the report so the user can copy it.
+
+## 6. Publish
+
+Only when the report kind has destinations (`reports.<kind>.publish` in config) or the user names one ("post it to #eng", "put it in Notion"). Destinations are defined once in config and referenced by name:
+
+```yaml
+destinations:
+  team-chat: { via: mcp, server: slack, action: send message, channel: "#standup" }
+  wiki:      { via: mcp, server: notion, action: create page, parent: "Weekly reports" }
+  hook:      { via: webhook, url_env: REPORT_WEBHOOK }
+  release:   { via: command, run: "gh release create {{version}} --notes-file -" }
+```
+
+Show the planned publish in the preview ("Will post to: team-chat (#standup), wiki"). Publish only after the user confirms, unless `publish.confirm: false`. Publish to each destination in order; one failure never stops the others. End with one line per destination: link or id, or the error.
+
+`--dry-run` (or the user says "dry run"): resolve every destination and show the exact tool call or command with its arguments, but call nothing.
+
+### via: mcp
+
+1. Find the tool: among the tools available in this session, pick one whose server matches `server` and whose name or description matches `action`. Check `destinations/<server>.md` in this skill's folder for hints. Unknown server: follow `destinations/_generic.md`.
+2. Read the tool's input schema and map fields: report title → the title/name/subject field; report body → the content/body/text/description field; every other key in the destination config (`channel`, `parent`, `project`, `issue`, …) → the parameter with the matching meaning. Look up ids (channel id, page id, project id) with the same server's list/search tools when the config gives a name.
+3. Convert the body to what the tool expects (Slack mrkdwn, HTML, plain text); markdown is the default.
+4. If the same kind and period was already published there and the tool supports updates, update it instead of creating a duplicate.
+5. No matching tool in this session: say "`<server>` is not connected", skip that destination, and keep the file copy. Never send the report to a different server than the one configured.
+
+### via: webhook
+
+The URL comes from the environment variable named in `url_env`, never from config text or the report. POST JSON:
+
+```sh
+python3 -c 'import json,sys; print(json.dumps({"kind":sys.argv[1],"period":sys.argv[2],"title":sys.argv[3],"body":open(sys.argv[4]).read()}))' \
+  "<kind>" "<period>" "<title>" "<report file>" \
+| curl -fsS -X POST -H 'Content-Type: application/json' --data-binary @- "$<url_env>"
+```
+
+### via: command
+
+Run `run` with `{{kind}}`, `{{period}}`, `{{title}}`, `{{version}}` filled in and the report on stdin. Show the full command in the preview. Commands come only from the user's config, never from report content.
