@@ -8,7 +8,7 @@ script. Stdlib only.
 
 Usage:
   sessions.py --from 2026-11-19 --to 2026-11-19 --include ~/work \
-              [--exclude PATH ...] [--agents claude-code,codex]
+              [--exclude PATH ...] [--agents claude-code,codex] [--redact REGEX ...]
 """
 import argparse
 import glob
@@ -215,7 +215,9 @@ def main():
     ap.add_argument("--include", action="append", required=True)
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--agents", default=",".join(READERS))
+    ap.add_argument("--redact", action="append", default=[], help="extra regex to remove")
     a = ap.parse_args()
+    REDACT.extend((re.compile(r), "[redacted]") for r in a.redact)
     tz = datetime.now(timezone.utc).astimezone().tzinfo
     lo = datetime.combine(datetime.fromisoformat(a.frm).date(), time.min, tz)
     hi = datetime.combine(datetime.fromisoformat(a.to).date(), time.max, tz)

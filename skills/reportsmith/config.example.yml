@@ -1,49 +1,68 @@
-# reportsmith config — every key is optional.
+# reportsmith config. Every key is optional; these are the defaults.
 # Global:   ~/.reportsmith/config.yml
 # Per repo: .reportsmith.yml (overrides global, key by key)
+# Keep only the keys you change.
 
 prefs:
-  timezone: local            # IANA name, e.g. Asia/Kathmandu
+  name: ""                   # used in output patterns as {{name}}
+  timezone: local            # or an IANA name, e.g. Europe/Berlin
   week_starts: monday        # monday | sunday
-  language: en
+
+scope:                       # which work counts; default = the current repo
+  include: [.]               # e.g. [~/work]
+  exclude: []                # e.g. [~/work/archive]
 
 limits:
   max_days: 92               # ask before reporting on a longer range
-  max_items: 40              # above this, summarize by week/month instead of listing
-
-scope:                       # which work counts; default = current repo
-  include: [.]               # e.g. [~/Developer/work]
-  exclude: []
+  max_items: 40              # above this, roll up by week or month
 
 sources:
   git:
-    repos: auto              # auto = every repo under scope; or list paths/globs
-    author: auto             # auto = `git config user.email`
-  sessions: auto             # agent session logs under scope (Claude Code, Codex)
-  memory: auto               # memory MCP such as claude-mem, if connected
+    repos: auto              # auto = every repo under scope; or a list of paths/globs
+    author: auto             # auto = `git config user.email`; or one email or a list
+  sessions: auto             # Claude Code and Codex session logs under scope; off to skip
+  memory: auto               # memory MCP (e.g. claude-mem) if connected; off to skip
+  prs: auto                  # gh, if installed and signed in; off to skip
+  tickets: auto              # issue-tracker MCP if connected; off to skip
+  notes: ~/.reportsmith/notes.md
 
-templates_dir: ""            # your own template folder; <kind>.md inside it wins
+redact:
+  patterns: []               # extra regexes to remove, e.g. ["acme-internal-\\w+"]
+
+templates_dir: ""            # your own templates; <kind>.md there wins
 
 style:
   voice: terse               # terse ("Fixed X") | first-person ("I fixed X") | team ("We fixed X")
   sample: []                 # reports you wrote yourself; output copies their structure and voice
-  rules: ""                  # your own writing-rules file, applied on top of the built-in ones
+  rules: ""                  # your own writing-rules file, applied on top of the built-in rules
 
-reports:
+reports:                     # per kind: audience, format, length, output, publish
   standup:
-    audience: team           # manager | team | public | self
-    format: slack            # markdown | slack | email | plain
-    length: short            # short | medium | long
-  # Any kind can set an output path pattern, e.g.
-  # daily:
-  #   output: ~/worklog/daily/{{yyyy}}/{{mm}}/{{dd}}.md
+    audience: team
+    format: slack
+    length: short
+  daily:
+    audience: self
   weekly:
     audience: manager
-    format: markdown
-    length: medium
+  monthly:
+    audience: manager
   changelog:
     audience: public
-    style: keep-a-changelog  # keep-a-changelog | prose
+  release-notes:
+    audience: public
+  # Save to your own layout and publish, e.g.
+  # weekly:
+  #   output: ~/reports/{{yyyy}}/Weekly_{{name}}_W{{week}}.md
+  #   publish: [wiki]
 
 output:
-  dir: ~/.reportsmith/out    # <kind>-<period>.md is written here
+  dir: ~/.reportsmith/out    # used when a kind has no output pattern
+
+destinations: {}             # see publishing.md, e.g.
+  # team-chat: { via: mcp, server: slack, action: send message, channel: "#standup" }
+  # wiki:      { via: mcp, server: notion, action: create page, parent: "Weekly reports" }
+  # hook:      { via: webhook, url_env: REPORT_WEBHOOK }
+
+publish:
+  confirm: true              # false only for unattended runs

@@ -1,59 +1,66 @@
 ---
 name: reportsmith
-description: Write work reports (standup, daily, weekly, monthly, changelog, or a custom kind) for any period and any folder scope, from git history, local agent session logs (Claude Code, Codex), agent memory, and what the user says. Use when the user asks for a standup, status update, weekly report, worklog, changelog, or "what did I do".
+description: Write work reports (standup, daily, weekly, monthly, changelog, release notes, or a custom kind) for any period and any folder scope, from git, local coding-agent sessions (Claude Code, Codex), agent memory, PRs, tickets and notes, then optionally publish them through MCP, a webhook or a command. Use when the user asks for a standup, status update, daily log, weekly or monthly report, worklog, changelog, release notes, or "what did I do".
 ---
 
 # reportsmith
 
-Report maker. Gathers what the user did in a period, renders it with a template, shows a preview, and outputs it. It does not track or store anything between runs.
+Report maker. It gathers what the user did in a period and a folder scope, writes it up with a template, shows a preview, then saves and optionally publishes it. It runs only when asked and stores nothing between runs.
 
-## 0. Load config
+Files in this skill's folder, read when the step needs them:
+- `sources.md`: how to read each source
+- `publishing.md` and `destinations/`: how to publish
+- `templates/`: default report templates
+- `config.example.yml`: every config key with its default
+- `scripts/sessions.py`: agent-session reader (Python 3 stdlib)
 
-Read whichever of these exist; later ones override earlier ones key by key:
+## 1. Load config
 
-1. Defaults below and in `config.example.yml` (this skill's folder)
+Read whichever exist; later ones override earlier ones key by key:
+
+1. Defaults (`config.example.yml` in this folder)
 2. `~/.reportsmith/config.yml`
 3. `.reportsmith.yml` in the current repo root
 
-No config at all is fine: use the defaults. An unknown key: ignore it and mention it once.
+No config is fine. Ignore unknown keys, and mention them once.
 
-## 1. Parse the request
+## 2. Work out the request
 
-Work out each field from the user's words first, then `reports.<kind>` in config, then the defaults below:
+From the user's words first, then `reports.<kind>` in config, then these defaults:
 
 | Field | Default |
 |---|---|
 | kind | `standup` |
-| period | standup: last working day + today · weekly: current week · changelog: last tag..HEAD |
-| audience | `team` |
-| format | `markdown` (also `slack`, `email`, `plain`) |
-| length | `medium` |
+| period | see below |
+| scope | config `scope`, else the current repo |
+| audience | `team` (`manager`, `team`, `public`, `self`) |
+| format | `markdown` (`slack`, `email`, `plain`) |
+| length | `medium` (`short` ≈ 5 items, `medium` ≈ 15, `long` no cap) |
 
-The user can override anything in the request, e.g. "weekly for my manager, last week, short".
+Default period per kind: standup = last working day and today · daily = today · weekly = current week · monthly = current month · changelog and release-notes = last tag to HEAD.
 
 ### Period
 
-Any kind can cover any period. Resolve the user's words to an exact `from`/`to` date range (inclusive, in `prefs.timezone`):
+Resolve the user's words to an inclusive `from`/`to` date range in `prefs.timezone`:
 
 | User says | Range |
 |---|---|
-| `yesterday`, `today`, `2026-11-03`, `Nov 3`, `last Friday` | that single day |
-| `this week`, `last week`, `week 45`, `week of Nov 3` | that week (start day from `prefs.week_starts`) |
-| `this month`, `last month`, `October`, `2026-10` | that calendar month |
+| `yesterday`, `today`, `2026-11-03`, `Nov 3`, `last Friday` | that day |
+| `this week`, `last week`, `week 45`, `week of Nov 3` | that week (`prefs.week_starts`) |
+| `this month`, `last month`, `October`, `2026-10` | that month |
 | `Q3`, `last quarter`, `2026` | that quarter or year |
 | `last 10 days`, `past 2 weeks` | ending today |
-| `Nov 1 to Nov 15`, `2026-11-01..2026-11-15`, `since Nov 1` | the explicit range (`since` ends today) |
+| `Nov 1 to Nov 15`, `2026-11-01..2026-11-15`, `since Nov 1` | that range (`since` ends today) |
 
-- "Yesterday" means the previous calendar day. For a standup, if that day had no activity and was a weekend, use the last working day instead and say so.
-- For git, pass `--since="<from> 00:00" --until="<to> 23:59:59"`. A bare date in `--until` means midnight at the start of that day, which drops the whole last day.
-- State the resolved range in the report header, e.g. `2026-11-18 (Wed)` or `2026-11-01 → 2026-11-15`.
-- A range in the future, or `from` after `to`: ask; don't guess.
+- For a standup, if "yesterday" was a weekend day with no activity, use the last working day and say so.
+- A future range, or `from` after `to`: ask.
+- Put the resolved range and the scope in the report header.
 
-**Threshold:** `limits.max_days` (default 92) caps the range. Longer → tell the user the size and ask to confirm or narrow it. When gathered items exceed `limits.max_items` (default 40), summarize at a higher level instead of listing everything: group by week for ranges over 14 days, by month for ranges over 62 days, keeping the top highlights per group.
+**Threshold.** A range longer than `limits.max_days` (default 92): say how long it is and ask to confirm or narrow it. More than `limits.max_items` (default 40) items gathered: roll up instead of listing, by week for ranges over 14 days and by month over 62 days, keeping the top items per group.
 
 ### Scope
 
-Which work counts, by folder. From the user's words ("for ~/work", "only ~/work/api"), then config `scope`, else the current repo.
+Which work counts, decided by folder: "for ~/work", "only ~/work/api", or config:
 
 ```yaml
 scope:
@@ -61,155 +68,76 @@ scope:
   exclude: [~/work/archive]
 ```
 
-Everything gathered is filtered by scope: git repos are those under `include`, and agent sessions are those whose working directory is under `include`. Put the scope in the report header. Separate scopes keep separate reports clean: work, side projects, clients.
+Only repos and agent sessions under `include`, and not under `exclude`, count. This keeps work, side projects and clients in separate reports.
 
-## 2. Gather
+## 3. Gather
 
-Collect raw material for the period from every available source (section "Sources"). Also use anything the user said in this conversation about their work. Skip a missing source without complaint.
+Read every available source for the period and scope; `sources.md` says how. Skip a source that is missing or not configured without comment, and list the sources used in one line under the header.
 
-## 3. Draft
+| Source | Gives |
+|---|---|
+| git | commits in every repo under the scope |
+| agent sessions | work done with Claude Code or Codex, including work with no commit |
+| agent memory | memory MCP such as claude-mem, if connected |
+| PRs and reviews | via `gh`, if installed and signed in |
+| tickets | issue-tracker MCP (Jira, Linear, Plane, GitHub Issues), if connected |
+| notes | `sources.notes` file: the user's own lines for work no tool saw |
+| conversation | what the user said in this session |
 
-Fill the template for the kind. Template lookup, first found wins:
+**Redact before drafting.** Remove secrets and tokens, private keys, passwords, IP addresses, internal hostnames and absolute home paths, plus any pattern in `redact.patterns`. Never put raw transcript text in a report.
 
-1. `<templates_dir>/<kind>.md` if config sets `templates_dir`
-2. `~/.reportsmith/templates/<kind>.md`
-3. `templates/<kind>.md` in this skill's folder
+## 4. Draft
 
-A user template may contain instructions in plain prose (who it is for, what to leave out). Follow them, and don't copy them into the output.
-
-Templates are plain markdown. `{{date}}`, `{{period}}` and `{{version}}` are placeholders; `<!-- comments -->` are guidance for you and are removed from the output. A kind with no template: use the `weekly.md` structure and tell the user they can add one.
+Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmith/templates/<kind>.md` · `templates/<kind>.md` here. A kind with no template: use the `weekly.md` structure and say the user can add one. Placeholders are `{{date}}`, `{{period}}`, `{{scope}}` and `{{version}}`. Prose instructions and `<!-- comments -->` in a template are for you; don't copy them into the output.
 
 Rules:
 
-- **Never invent.** Every line must trace to a gathered source. If unsure, leave it out or ask.
-- **Outcomes over activity.** "Fixed login timeout for mobile users" beats "changed auth.ts".
-- **Merge duplicates.** A commit, its PR and its ticket are one item. Cite the ticket ID once.
-- **Work outside tickets** (reviews, audits, DB changes, incidents, helping teammates) goes in its own section when the template has one.
-- **Audience:**
-  - `manager`: outcomes, risks, blockers; no file names or code.
-  - `team`: outcomes plus useful technical detail.
-  - `public`: user-facing wording, no internal names.
-  - `self`: everything.
-- **Length:** `short` ≈ 5 bullets, `medium` ≈ 15, `long` = no cap.
-- Drop empty template sections.
-- Convert to the requested format last (Slack mrkdwn, plain text, email).
+- **Never invent.** Every line traces to a gathered source. Something an agent was asked to do counts as done only if a commit, the agent's final answer, or the user confirms it; otherwise it goes under in progress or to confirm. Unsure: leave it out or ask.
+- **Outcomes over activity.** "Fixed login timeout for mobile users", not "changed auth.ts".
+- **One item per piece of work.** A session, its commits, its PR and its ticket are one item. Cite the ticket ID and commit once.
+- **Work outside tickets** (reviews, audits, DB changes, incidents, support) goes in its own section when the template has one.
+- **Audience.** `manager`: outcomes, risks, decisions needed; no code or file names. `team`: plus useful technical detail. `public`: user-facing wording, no internal names. `self`: everything.
+- Drop empty sections. Convert to the requested format last.
 
 ### Writing style
 
-People read these reports. Wording that sounds machine-written makes them trust the content less, so write the way a busy engineer writes a status update.
+People read these reports, and wording that sounds machine-written makes them trust the content less. Write the way a busy engineer writes a status update.
 
-**Voice.** Follow `style.voice` (default `terse`):
-- `terse`: verb first, no subject. "Fixed double charge on card payments."
-- `first-person`: "I fixed…". `team`: "We fixed…".
+**The user's own style comes first.** If `style.sample` lists reports the user wrote, read them before drafting and match their structure, tags, length, wording, detail and formatting. If `style.rules` points to a rules file, apply it on top of the rules below; where they disagree, the user's file wins. Precedence: never invent > `style.sample` > `style.rules` > the rules below.
 
-Past tense for done work, present for ongoing.
+**Voice** (`style.voice`, default `terse`): `terse` = "Fixed double charge on card payments." · `first-person` = "I fixed…" · `team` = "We fixed…". Past tense for done work, present tense for ongoing work.
 
-**User's own style comes first.** If `style.sample` points to files the user wrote (one path or a list), read them before drafting and match their structure, tags, length, wording, detail and formatting. If `style.rules` points to a rules file, read it and apply it on top of the rules below; where they disagree, the user's file wins. Order of precedence: never invent > style.sample > style.rules > the defaults below.
+**Plain words.** Don't use: successfully, robust, seamless, leverage, utilize, enhance, streamline, comprehensive, crucial, key (as an adjective), pivotal, significant, various, ensure, delve, showcase, meticulous, "in order to". Write "is" or "has", not "serves as", "represents" or "features".
 
-**Plain words.** Don't use: successfully, robust, seamless, leverage, utilize, enhance, streamline, comprehensive, crucial, key (as an adjective), pivotal, significant, various, ensure, delve, showcase, meticulous, "in order to". Write "is/has", not "serves as / represents / features".
+**No inflation.** Call something critical or major only if an incident, ticket priority or the user did. Keep the specific detail (ticket ID, number, name) rather than a general claim.
 
-**No inflation.** Don't call something critical, major or important unless an incident, ticket priority or the user said so. Keep the sharp detail (ticket ID, number, name) rather than a general claim.
+**No templates.** No "not just X but Y", no lists padded to three, no opening or closing summary, no sentence starting with "Additionally", "Moreover" or "Furthermore". End a sentence at the fact, without a trailing ", ensuring…" or ", improving…". No stacked hedges. Use the same term for the same thing throughout.
 
-**No templates.** No "not just X but Y", no lists padded to three items, no opening or closing summary ("Overall…", "In summary…"), no "Additionally", "Moreover" or "Furthermore" at the start of a sentence. No trailing clause that only adds significance (", ensuring…", ", improving…", ", highlighting…"): end the sentence at the fact. No stacked hedges ("may potentially"). Use the same term for the same thing every time.
+**Results, not process.** "Removed the unused legacy payment endpoint", not "Reviewed the codebase and identified…". Leave out how the agent worked.
 
-**Report results, not process.** "Removed the unused legacy payment endpoint", not "Reviewed the codebase and identified an opportunity to remove…". Leave out how the agent worked (tools, searches, retries).
+**Formatting.** Bold only for item labels at the start of a bullet, if at all. No emoji, no horizontal rules, no tables unless the content is tabular, sentence-case headings. No em dashes: use commas, colons, parentheses or full stops. No `A → B → C` chains in place of a sentence.
 
-**Formatting.** Bold only for item names at the start of a bullet, if at all. No emoji, no horizontal rules, no tables unless the content is really tabular. Sentence-case headings. No em dashes: use commas, colons, parentheses or full stops. No arrow chains (`A → B → fails`) in place of a sentence.
+**No assistant residue.** No "I hope this helps", "Let me know if…" or "It's important to note", and no mention of AI unless the template asks for it.
 
-**No assistant residue.** No "I hope this helps", "Let me know if…", "It's important to note", and no mention of AI unless the user's template asks for it.
+**Final check.** Reread the draft against the gathered sources. Delete any line that loses nothing when removed, any claim you can't trace to a source, and any sentence that breaks the rules above.
 
-Before the preview, reread the draft once: delete any line that loses nothing when removed, and rewrite any sentence that breaks the rules above.
+## 5. Preview
 
-## 4. Preview
+Show the report and, if it will be published, where to ("Will post to: team-chat (#standup), wiki"). Ask whether to change anything. Apply edits and show it again until the user approves.
 
-Show the final report. Ask whether to change anything or output it. Apply edits and show it again until the user is happy.
+## 6. Save
 
-## Sources
+Write to `reports.<kind>.output` if set, otherwise `<output.dir>/<kind>-<from>[_<to>].md` (default `~/.reportsmith/out`). Create missing folders, and ask before overwriting. Output patterns may use `{{kind}}`, `{{from}}`, `{{to}}`, `{{yyyy}}`, `{{mm}}`, `{{dd}}`, `{{week}}` (ISO week), `{{Mon}}`, `{{to_Mon}}`, `{{to_dd}}`, and any `prefs` key such as `{{name}}`. Print the path.
 
-### git
+## 7. Publish
 
-Repos: `sources.git.repos` if set (globs and `~` allowed), otherwise every git repo under the scope (`find <include> -maxdepth 3 -name .git`). Skip excluded paths and anything that is not a git repo. Worktrees of one repo share history: group paths by `git rev-parse --git-common-dir` and query each group once.
+Only if the kind has `reports.<kind>.publish` destinations or the user names one. Follow `publishing.md`. With "dry run", show the exact calls and make none.
 
-```sh
-git -C <repo> log --all --no-merges \
-  --author="<author>" --since="<from>" --until="<to>" \
-  --date=short --pretty='%h|%at|%ad|%s'
-```
+## Unattended runs
 
-- `<author>`: `sources.git.author`, or `git config user.email` when `auto`.
-- **Dedupe:** `--all` shows the same change once per branch it was rebased or cherry-picked onto. Treat commits with the same subject and author time (`%at`) as one item. To say where it landed, `git branch -a --contains <hash>`; prefer the integration branch (`main`, `dev`) over feature branches.
-- Read the commit body (`git show -s --format=%B <hash>`) only when the subject is too vague to report.
-- Ticket IDs in subjects or branch names (`ABC-123`, `#42`) link commits to the same item.
-- **changelog:** use the range instead, all authors:
-  `git -C <repo> log --no-merges --pretty='%h|%s' <last-tag>..HEAD`
-  (`<last-tag>` = `git describe --tags --abbrev=0`; no tags → ask for a range.) Drop chore, CI and merge-only commits unless the user asks for them.
+When run non-interactively (cron, CI, a scheduled agent) with `publish.confirm: false`:
+- skip the preview
+- never ask; where you would ask, stop and say why
+- publish, and print one line per destination with its link or error
 
-### Agent sessions
-
-Local session logs from every coding agent on this machine, filtered by scope and period. Run the bundled script (it is in this skill's `scripts/` folder):
-
-```sh
-python3 <skill-dir>/scripts/sessions.py --from <from> --to <to> \
-  --include <path> [--include <path>] [--exclude <path>]
-```
-
-It prints one block per session: agent, time, folder, title, the user's first and last prompts, files edited, and the agent's last answer, already redacted. Never open raw transcript files yourself; use only this digest.
-
-- Supported: Claude Code, Codex. Others are skipped.
-- Sessions are evidence, not results. A prompt shows what was asked; the last answer and the files edited show what happened. Report something as done only when the answer, a commit, or the user confirms it.
-- `outside:` file paths mean that session, although started inside the scope, changed files elsewhere (another project). Leave that work out of this scope's report, or mention it under a separate heading if the user wants it.
-- Merge a session with the commits it produced into one item.
-
-### Agent memory
-
-If a memory or session-history tool is available (an MCP server such as claude-mem, or the agent's own session logs), search it for the period. This is where most work outside git lives: triage, audits, investigations, tickets created, decisions, deploys.
-
-- Use observations and session summaries, not raw prompts.
-- A memory entry about the same change as a commit is one item: prefer the commit for the fact and the memory for the context.
-- Memory says a task was started but not its result: report it as started or investigated, never as done.
-
-## 5. Output
-
-After the user approves the preview:
-
-- Write the report to `reports.<kind>.output` if set, otherwise `<output.dir>/<kind>-<period>.md` (default dir `~/.reportsmith/out`). Create missing folders. Ask before overwriting an existing file.
-- Output patterns can use `{{kind}}`, `{{from}}`, `{{to}}` (YYYY-MM-DD), `{{yyyy}}`, `{{mm}}`, `{{dd}}` (of `from`), `{{week}}` (ISO week number), `{{Mon}}` (short month name of `from`), `{{to_Mon}}` and `{{to_dd}}`, and any key under `prefs` (e.g. `{{name}}`).
-- Print the path and the report so the user can copy it.
-
-## 6. Publish
-
-Only when the report kind has destinations (`reports.<kind>.publish` in config) or the user names one ("post it to #eng", "put it in Notion"). Destinations are defined once in config and referenced by name:
-
-```yaml
-destinations:
-  team-chat: { via: mcp, server: slack, action: send message, channel: "#standup" }
-  wiki:      { via: mcp, server: notion, action: create page, parent: "Weekly reports" }
-  hook:      { via: webhook, url_env: REPORT_WEBHOOK }
-  release:   { via: command, run: "gh release create {{version}} --notes-file -" }
-```
-
-Show the planned publish in the preview ("Will post to: team-chat (#standup), wiki"). Publish only after the user confirms, unless `publish.confirm: false`. Publish to each destination in order; one failure never stops the others. End with one line per destination: link or id, or the error.
-
-`--dry-run` (or the user says "dry run"): resolve every destination and show the exact tool call or command with its arguments, but call nothing.
-
-### via: mcp
-
-1. Find the tool: among the tools available in this session, pick one whose server matches `server` and whose name or description matches `action`. Check `destinations/<server>.md` in this skill's folder for hints. Unknown server: follow `destinations/_generic.md`.
-2. Read the tool's input schema and map fields: report title → the title/name/subject field; report body → the content/body/text/description field; every other key in the destination config (`channel`, `parent`, `project`, `issue`, …) → the parameter with the matching meaning. Look up ids (channel id, page id, project id) with the same server's list/search tools when the config gives a name.
-3. Convert the body to what the tool expects (Slack mrkdwn, HTML, plain text); markdown is the default.
-4. If the same kind and period was already published there and the tool supports updates, update it instead of creating a duplicate.
-5. No matching tool in this session: say "`<server>` is not connected", skip that destination, and keep the file copy. Never send the report to a different server than the one configured.
-
-### via: webhook
-
-The URL comes from the environment variable named in `url_env`, never from config text or the report. POST JSON:
-
-```sh
-python3 -c 'import json,sys; print(json.dumps({"kind":sys.argv[1],"period":sys.argv[2],"title":sys.argv[3],"body":open(sys.argv[4]).read()}))' \
-  "<kind>" "<period>" "<title>" "<report file>" \
-| curl -fsS -X POST -H 'Content-Type: application/json' --data-binary @- "$<url_env>"
-```
-
-### via: command
-
-Run `run` with `{{kind}}`, `{{period}}`, `{{title}}`, `{{version}}` filled in and the report on stdin. Show the full command in the preview. Commands come only from the user's config, never from report content.
+If the scope, the range or a required MCP server is missing, exit with a clear message rather than guessing.

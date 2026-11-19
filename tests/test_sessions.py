@@ -66,3 +66,8 @@ assert S.show_path(os.path.join(work, "a", "b", "c", "d.py"), [work]) == os.path
 assert S.show_path(os.path.expanduser("~/.claude/x/memory/m.md"), [work]) is None
 assert S.show_path("/opt/elsewhere/proj/f.py", [work]).startswith("outside:")
 print("ok paths")
+
+# Extra redaction patterns from config.
+S.REDACT.append((S.re.compile(r"acme-internal-\w+"), "[redacted]"))
+assert S.redact("deployed to acme-internal-db7") == "deployed to [redacted]"
+print("ok redact")
