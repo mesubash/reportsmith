@@ -45,7 +45,7 @@ Pass one `--redact` per entry in `redact.patterns`.
 
 Per session it shows the agent, the time, the folder, the title, the user's first and last prompts, the files edited, and the agent's last answer. Use only this digest; never open raw transcript files.
 
-- Supported: Claude Code (`~/.claude/projects`), Codex (`~/.codex/sessions`).
+- Supported: Claude Code (`~/.claude/projects`), Codex (`~/.codex/sessions`), opencode (`~/.local/share/opencode/opencode.db`, read-only).
 - A prompt shows what was asked. The last answer, the files edited and the commits show what happened. Report something as done only with that evidence.
 - `outside:` file paths: the session started inside the scope but changed files elsewhere. Leave that work out, or put it under its own heading if the user wants it.
 - Merge a session with the commits it produced into one item.

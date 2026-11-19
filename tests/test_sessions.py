@@ -71,3 +71,33 @@ print("ok paths")
 S.REDACT.append((S.re.compile(r"acme-internal-\w+"), "[redacted]"))
 assert S.redact("deployed to acme-internal-db7") == "deployed to [redacted]"
 print("ok redact")
+
+# opencode: SQLite session -> message -> part; subagent sessions skipped.
+import sqlite3
+db = os.path.join(tmp, "opencode.db")
+con = sqlite3.connect(db)
+con.executescript("""
+CREATE TABLE session (id text, parent_id text, directory text, title text, time_created int, time_updated int);
+CREATE TABLE message (id text, session_id text, data text);
+CREATE TABLE part (id text, message_id text, session_id text, time_created int, data text);
+""")
+ms = int(datetime(2026, 11, 19, 10, 0, tzinfo=tz).timestamp() * 1000)
+con.execute("INSERT INTO session VALUES ('ses_main', NULL, ?, 'Fix login', ?, ?)", (work, ms, ms))
+con.execute("INSERT INTO session VALUES ('ses_sub', 'ses_main', ?, 'subagent', ?, ?)", (work, ms, ms))
+con.execute("INSERT INTO message VALUES ('m1', 'ses_main', ?)", (json.dumps({"role": "user"}),))
+con.execute("INSERT INTO message VALUES ('m2', 'ses_main', ?)", (json.dumps({"role": "assistant"}),))
+rows = [("p1", "m1", {"type": "text", "text": "fix the login timeout"}),
+        ("p2", "m1", {"type": "text", "text": "injected", "synthetic": True}),
+        ("p3", "m2", {"type": "tool", "tool": "edit", "state": {"input": {"filePath": os.path.join(work, "auth.ts")}}}),
+        ("p4", "m2", {"type": "patch", "files": [os.path.join(work, "session.ts")]}),
+        ("p5", "m2", {"type": "text", "text": "Timeout raised to 30s."})]
+for pid, mid, d in rows:
+    con.execute("INSERT INTO part VALUES (?, ?, 'ses_main', ?, ?)", (pid, mid, ms, json.dumps(d)))
+con.commit(); con.close()
+o = S.read_opencode(db, lo, hi)
+assert len(o) == 1 and o[0]["title"] == "Fix login" and o[0]["cwd"] == work
+assert o[0]["prompts"] == ["fix the login timeout"]
+assert o[0]["files"] == {os.path.join(work, "auth.ts"), os.path.join(work, "session.ts")}
+assert o[0]["answer"] == "Timeout raised to 30s."
+assert S.read_opencode(os.path.join(tmp, "missing.db"), lo, hi) == []
+print("ok opencode")

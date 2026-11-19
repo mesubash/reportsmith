@@ -20,7 +20,7 @@ sources:
   git:
     repos: auto              # auto = every repo under scope; or a list of paths/globs
     author: auto             # auto = `git config user.email`; or one email or a list
-  sessions: auto             # Claude Code and Codex session logs under scope; off to skip
+  sessions: auto             # Claude Code, Codex and opencode sessions under scope; off to skip
   memory: auto               # memory MCP (e.g. claude-mem) if connected; off to skip
   prs: auto                  # gh, if installed and signed in; off to skip
   tickets: auto              # issue-tracker MCP if connected; off to skip

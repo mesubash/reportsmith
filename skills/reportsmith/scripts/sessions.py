@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """Digest local agent session logs for a folder scope and date range.
 
-Reads Claude Code and Codex session logs, keeps sessions whose working
+Reads Claude Code, Codex and opencode session logs, keeps sessions whose working
 directory is inside the scope and that have activity in the range, and
 prints a short redacted markdown digest. Raw transcripts never leave this
 script. Stdlib only.
 
 Usage:
   sessions.py --from 2026-11-19 --to 2026-11-19 --include ~/work \
-              [--exclude PATH ...] [--agents claude-code,codex] [--redact REGEX ...]
+              [--exclude PATH ...] [--agents claude-code,codex,opencode] [--redact REGEX ...]
 """
 import argparse
 import glob
 import json
 import os
 import re
+import sqlite3
 from datetime import datetime, time, timezone
 
 MAX_PROMPTS = 12
@@ -140,31 +141,76 @@ def read_codex(path, lo, hi):
     return s
 
 
+OPENCODE_DB = "~/.local/share/opencode/opencode.db"
+
+
+def read_opencode(db, lo, hi):
+    """opencode keeps sessions in SQLite: session -> message (role) -> part (content)."""
+    db = os.path.expanduser(db)
+    if not os.path.exists(db):
+        return []
+    lo_ms, hi_ms = int(lo.timestamp() * 1000), int(hi.timestamp() * 1000)
+    conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    out = []
+    try:
+        rows = conn.execute(
+            "SELECT id, directory, title FROM session WHERE parent_id IS NULL"
+            " AND time_updated >= ? AND time_created <= ?", (lo_ms, hi_ms)).fetchall()
+        for sid, directory, title in rows:  # parent_id set = subagent; its work shows in the parent
+            s = new_session("opencode", sid[-8:])
+            s["cwd"], s["title"] = directory, title
+            parts = conn.execute(
+                "SELECT m.data, p.data, p.time_created FROM part p JOIN message m ON m.id = p.message_id"
+                " WHERE p.session_id = ? AND p.time_created BETWEEN ? AND ? ORDER BY p.time_created",
+                (sid, lo_ms, hi_ms))
+            for mdata, pdata, ms in parts:
+                role, part = json.loads(mdata).get("role"), json.loads(pdata)
+                touch(s, datetime.fromtimestamp(ms / 1000, timezone.utc).astimezone())
+                kind, text = part.get("type"), part.get("text", "")
+                if kind == "text" and role == "user" and not part.get("synthetic") and not is_noise(text):
+                    s["prompts"].append(text)
+                elif kind == "text" and role == "assistant" and text.strip():
+                    s["answer"] = text
+                elif kind == "tool" and part.get("tool") in ("edit", "write"):
+                    fp = (part.get("state") or {}).get("input", {}).get("filePath")
+                    if fp:
+                        s["files"].add(fp)
+                elif kind == "patch":
+                    s["files"].update(part.get("files") or [])
+            out.append(s)
+    finally:
+        conn.close()
+    return out
+
+
 def candidates(pattern, lo):
     cutoff = lo.timestamp()
     return [f for f in glob.glob(os.path.expanduser(pattern), recursive=True)
             if os.path.getmtime(f) >= cutoff]
 
 
-READERS = {
-    "claude-code": ("~/.claude/projects/*/*.jsonl", read_claude),
-    "codex": ("~/.codex/sessions/**/*.jsonl", read_codex),
+def from_files(pattern, reader):
+    return lambda lo, hi: (reader(f, lo, hi) for f in candidates(pattern, lo))
+
+
+READERS = {  # agent -> fn(lo, hi) yielding session dicts
+    "claude-code": from_files("~/.claude/projects/*/*.jsonl", read_claude),
+    "codex": from_files("~/.codex/sessions/**/*.jsonl", read_codex),
+    "opencode": lambda lo, hi: read_opencode(OPENCODE_DB, lo, hi),
 }
 
 
 def collect(lo, hi, include, exclude, agents):
     out = []
     for agent in agents:
-        pattern, reader = READERS[agent]
-        for f in candidates(pattern, lo):
-            s = reader(f, lo, hi)
+        for s in READERS[agent](lo, hi):
             if s["start"] and in_scope(s["cwd"], include, exclude) and (s["prompts"] or s["answer"]):
                 out.append(s)
     return sorted(out, key=lambda s: s["start"])
 
 
 AGENT_DIRS = tuple(os.path.realpath(os.path.expanduser(d)) + os.sep
-                   for d in ("~/.claude", "~/.codex", "~/.config/opencode"))
+                   for d in ("~/.claude", "~/.codex", "~/.config/opencode", "~/.local/share/opencode"))
 
 
 def short(parts):

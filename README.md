@@ -18,12 +18,13 @@ sources                         render                     publish
 ───────                         ──────                     ───────
 git (every repo in scope)  ─┐                          ┌─► file (default)
 agent sessions in scope    ─┤                          ├─► any MCP tool: Slack, Notion,
-  (Claude Code, Codex)      ├─► template + config  ─►  │    Confluence, Jira, Linear, Plane, …
-agent memory (claude-mem)  ─┤    preview / confirm     ├─► webhook
+  (Claude Code, Codex,      ├─► template + config  ─►  │    Confluence, Jira, Linear, Plane, …
+   opencode)                │    preview / confirm     │
+agent memory (claude-mem)  ─┤                          ├─► webhook
 PRs, tickets, notes        ─┘                          └─► shell command (e.g. gh release)
 ```
 
-Most real work never reaches a commit: triage, incident handling, server fixes, reviews, investigations. It does happen in agent sessions. reportsmith reads the session logs your agents already keep on disk, filtered to the folder you choose, so one report covers work done in Claude Code, Codex, or both.
+Most real work never reaches a commit: triage, incident handling, server fixes, reviews, investigations. It does happen in agent sessions. reportsmith reads the session logs your agents already keep on disk, filtered to the folder you choose, so one report covers work done in Claude Code, Codex and opencode together.
 
 - **Any scope:** `~/work/` for your job, `~/side-project/` for yourself, one folder per client. Repos under it are found automatically.
 - **Any period:** a day, week, month, quarter, `last 10 days`, or `Nov 1..Nov 15`, with a threshold that switches long ranges to weekly or monthly roll-ups.

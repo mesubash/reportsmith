@@ -1,6 +1,6 @@
 ---
 name: reportsmith
-description: Write work reports (standup, daily, weekly, monthly, changelog, release notes, or a custom kind) for any period and any folder scope, from git, local coding-agent sessions (Claude Code, Codex), agent memory, PRs, tickets and notes, then optionally publish them through MCP, a webhook or a command. Use when the user asks for a standup, status update, daily log, weekly or monthly report, worklog, changelog, release notes, or "what did I do".
+description: Write work reports (standup, daily, weekly, monthly, changelog, release notes, or a custom kind) for any period and any folder scope, from git, local coding-agent sessions (Claude Code, Codex, opencode), agent memory, PRs, tickets and notes, then optionally publish them through MCP, a webhook or a command. Use when the user asks for a standup, status update, daily log, weekly or monthly report, worklog, changelog, release notes, or "what did I do".
 ---
 
 # reportsmith
@@ -82,7 +82,7 @@ Read every available source for the period and scope; `sources.md` says how. Ski
 | Source | Gives |
 |---|---|
 | git | commits in every repo under the scope |
-| agent sessions | work done with Claude Code or Codex, including work with no commit |
+| agent sessions | work done with Claude Code, Codex or opencode, including work with no commit |
 | agent memory | memory MCP such as claude-mem, if connected |
 | PRs and reviews | via `gh`, if installed and signed in |
 | tickets | issue-tracker MCP (Jira, Linear, Plane, GitHub Issues), if connected |
