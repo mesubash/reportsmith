@@ -7,6 +7,7 @@
   <a href="https://github.com/mesubash/reportsmith/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/mesubash/reportsmith/test.yml?branch=main&label=tests" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/mesubash/reportsmith?color=3fb950" alt="MIT license"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent%20Skill-SKILL.md-8957e5" alt="Agent Skill"></a>
+  <a href="https://github.com/mesubash/reportsmith/blob/traffic/daily.csv"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmesubash%2Freportsmith%2Ftraffic%2Fbadge-clones.json" alt="Total clones"></a>
 </p>
 
 <p align="center">

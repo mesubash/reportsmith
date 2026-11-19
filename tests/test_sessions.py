@@ -125,4 +125,8 @@ rows = list(_csv.DictReader(open(p)))
 assert [r["date"] for r in rows] == ["2026-01-01", "2026-01-02"] and rows[0]["clones"] == "5", rows
 d = T.daily({"clones": [{"timestamp": "2026-01-03T00:00:00Z", "count": 2, "uniques": 1}]}, {"views": []})
 assert d == [{"date": "2026-01-03", "clones": 2, "unique_clones": 1, "views": 0, "unique_views": 0}]
+T.badges(p, tmp)
+b = json.load(open(os.path.join(tmp, "badge-clones.json")))
+assert b == {"schemaVersion": 1, "label": "clones", "message": "5", "color": "58a6ff"}, b
+assert json.load(open(os.path.join(tmp, "badge-views.json")))["message"] == "10"
 print("ok traffic")

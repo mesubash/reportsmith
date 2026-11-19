@@ -47,6 +47,16 @@ def daily(clones, views):
              "views": x.get("views", 0), "unique_views": x.get("unique_views", 0)} for d, x in days.items()]
 
 
+def badges(daily_csv, out):
+    """shields.io endpoint files with all-time totals, for README badges."""
+    with open(daily_csv, newline="") as f:
+        rows = list(csv.DictReader(f))
+    for field, label in (("clones", "clones"), ("views", "views")):
+        total = sum(int(r[field]) for r in rows)
+        with open(os.path.join(out, f"badge-{field}.json"), "w") as f:
+            json.dump({"schemaVersion": 1, "label": label, "message": f"{total:,}", "color": "58a6ff"}, f)
+
+
 def main():
     repo, out = sys.argv[1], sys.argv[2]
     token = os.environ.get("GH_TOKEN")
@@ -61,6 +71,7 @@ def main():
     refs = [{"date": today, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]}
             for r in get(repo, "popular/referrers", token)]
     merge(os.path.join(out, "referrers.csv"), ["date", "referrer"], ["date", "referrer", "count", "uniques"], refs)
+    badges(os.path.join(out, "daily.csv"), out)
     print(f"daily.csv: {n} days; referrers today: {len(refs)}")
 
 
