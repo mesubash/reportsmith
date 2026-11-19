@@ -11,7 +11,15 @@
       "name": "reportsmith",
       "description": "Standups, daily logs, weekly and monthly reports, changelogs and release notes from git and your coding agents' sessions, published through MCP.",
       "source": "./",
-      "category": "productivity"
+      "category": "productivity",
+      "keywords": [
+        "standup",
+        "weekly-report",
+        "changelog",
+        "release-notes",
+        "worklog",
+        "mcp"
+      ]
     }
   ]
 }

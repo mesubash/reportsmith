@@ -1,10 +1,12 @@
 # reportsmith
 
-An agent skill that writes your work reports (standups, daily logs, weekly and monthly updates, changelogs, release notes) from everything you did in a folder: git commits **and the sessions of every coding agent you used there**. Then it publishes them wherever your agent can reach through MCP.
+**Standups, daily logs, weekly and monthly reports, changelogs and release notes, written from your git commits and your AI coding-agent sessions.**
 
-Works with any agent that supports the open `SKILL.md` skill format (Claude Code, Codex, and others). No server, no database, no tracking: it runs when you ask, makes a report, and stops.
+reportsmith is an open [Agent Skill](https://agentskills.io) (`SKILL.md`) for **Claude Code**, **Codex**, **opencode** and other AI coding agents. Point it at a folder and a period ("standup", "weekly report for last week", "changelog since v1.2") and it gathers what you did from git, from the session logs your agents already keep, and optionally from PRs, tickets and agent memory. It writes the report in plain human wording, or in your own style, and can publish it through any MCP server (Slack, Notion, Plane, Google Drive and more), a webhook or a command. It is also packaged as a Claude Code plugin.
 
-> **Status:** v0.1 (private). Publishing through MCP is next.
+No server, no database, no tracking: it runs when you ask, makes a report, and stops.
+
+> **Status:** private pre-release. v0.1.0 is released; v0.2 (publishing, more sources, plugin packaging) is on `main`.
 
 ## Why
 

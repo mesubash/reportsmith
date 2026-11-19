@@ -9,5 +9,22 @@
   "homepage": "https://github.com/mesubash/reportsmith",
   "repository": "https://github.com/mesubash/reportsmith",
   "license": "MIT",
-  "keywords": ["reports", "standup", "worklog", "changelog", "release-notes", "mcp"]
+  "keywords": [
+    "claude-skill",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "opencode",
+    "mcp",
+    "standup",
+    "daily-log",
+    "weekly-report",
+    "monthly-report",
+    "worklog",
+    "changelog",
+    "release-notes",
+    "status-report",
+    "developer-productivity",
+    "git"
+  ]
 }
