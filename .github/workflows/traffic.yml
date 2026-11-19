@@ -22,11 +22,11 @@ jobs:
       - name: Token missing
         if: env.GH_TOKEN == ''
         run: echo "::notice::TRAFFIC_TOKEN secret is not set; skipping. See the comment at the top of traffic.yml."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: env.GH_TOKEN != ''
         with:
           path: main
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: env.GH_TOKEN != ''
         with:
           ref: traffic
