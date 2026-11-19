@@ -37,6 +37,30 @@ Most real work never reaches a commit: triage, incident handling, server fixes, 
 - **Works with any destination:** publishing goes through whatever MCP servers you have connected. Adding a destination means adding config, not code.
 - **Private by default:** redaction before preview, nothing published without confirmation unless you turn that off.
 
+## Example
+
+You ask: *"standup for 2026-03-10, scope ~/work/app"*. That day the repo has two of your commits (one cherry-picked onto a second branch), a teammate's commit, and a commit from the next day. You also had a Claude Code session that restarted a stuck worker and was then asked about a failed backup.
+
+reportsmith writes:
+
+```
+Standup, 2026-03-10 (Tue)
+Scope: app · Sources: git, Claude Code sessions
+
+Yesterday
+- Fixed duplicate card charges: a second charge can no longer start while the
+  first is still unconfirmed (PAY-12, f0b6394).
+- Added CSV export of invoices (INV-7, 7f61aa0).
+- Restarted the stuck invoice queue worker on staging. 214 queued jobs drained
+  and the queue is now empty.
+
+To confirm
+- Nightly backup failure: asked to look into it; the session does not say what
+  was found or whether it was fixed.
+```
+
+The cherry-picked fix shows up once, the teammate's commit and the next day's commit are left out, the session's restart shows up even though it never reached git, and the backup question is not claimed as done. This is the fixture in [`evals/standup-fixed-day`](evals/standup-fixed-day).
+
 ## Install
 
 The skill is the folder `skills/reportsmith/`. Install it whichever way your agent supports.
