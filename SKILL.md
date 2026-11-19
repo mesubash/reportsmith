@@ -1,6 +1,6 @@
 ---
 name: reportsmith
-description: Write work reports (standup, weekly, changelog, or a custom kind) from the user's git history and what they say in the conversation. Use when the user asks for a standup, status update, weekly report, worklog, changelog, or "what did I do".
+description: Write work reports (standup, daily, weekly, monthly, changelog, or a custom kind) for any period and any folder scope, from git history, local agent session logs (Claude Code, Codex), agent memory, and what the user says. Use when the user asks for a standup, status update, weekly report, worklog, changelog, or "what did I do".
 ---
 
 # reportsmith
@@ -51,6 +51,18 @@ Any kind can cover any period. Resolve the user's words to an exact `from`/`to` 
 
 **Threshold:** `limits.max_days` (default 92) caps the range. Longer → tell the user the size and ask to confirm or narrow it. When gathered items exceed `limits.max_items` (default 40), summarize at a higher level instead of listing everything: group by week for ranges over 14 days, by month for ranges over 62 days, keeping the top highlights per group.
 
+### Scope
+
+Which work counts, by folder. From the user's words ("for ~/work", "only ~/work/api"), then config `scope`, else the current repo.
+
+```yaml
+scope:
+  include: [~/work]
+  exclude: [~/work/archive]
+```
+
+Everything gathered is filtered by scope: git repos are those under `include`, and agent sessions are those whose working directory is under `include`. Put the scope in the report header. Separate scopes keep separate reports clean: work, side projects, clients.
+
 ## 2. Gather
 
 Collect raw material for the period from every available source (section "Sources"). Also use anything the user said in this conversation about their work. Skip a missing source without complaint.
@@ -87,7 +99,7 @@ Show the final report. Ask whether to change anything or output it. Apply edits 
 
 ### git
 
-For each path in `sources.git.repos` (expand globs and `~`; skip anything that is not a git repo; default: current repo). Worktrees of one repo share history: group paths by `git rev-parse --git-common-dir` and query each group once.
+Repos: `sources.git.repos` if set (globs and `~` allowed), otherwise every git repo under the scope (`find <include> -maxdepth 3 -name .git`). Skip excluded paths and anything that is not a git repo. Worktrees of one repo share history: group paths by `git rev-parse --git-common-dir` and query each group once.
 
 ```sh
 git -C <repo> log --all --no-merges \
@@ -102,6 +114,22 @@ git -C <repo> log --all --no-merges \
 - **changelog:** use the range instead, all authors:
   `git -C <repo> log --no-merges --pretty='%h|%s' <last-tag>..HEAD`
   (`<last-tag>` = `git describe --tags --abbrev=0`; no tags → ask for a range.) Drop chore, CI and merge-only commits unless the user asks for them.
+
+### Agent sessions
+
+Local session logs from every coding agent on this machine, filtered by scope and period. Run the bundled script (it is in this skill's `scripts/` folder):
+
+```sh
+python3 <skill-dir>/scripts/sessions.py --from <from> --to <to> \
+  --include <path> [--include <path>] [--exclude <path>]
+```
+
+It prints one block per session: agent, time, folder, title, the user's first and last prompts, files edited, and the agent's last answer, already redacted. Never open raw transcript files yourself; use only this digest.
+
+- Supported: Claude Code, Codex. Others are skipped.
+- Sessions are evidence, not results. A prompt shows what was asked; the last answer and the files edited show what happened. Report something as done only when the answer, a commit, or the user confirms it.
+- `outside:` file paths mean that session, although started inside the scope, changed files elsewhere (another project). Leave that work out of this scope's report, or mention it under a separate heading if the user wants it.
+- Merge a session with the commits it produced into one item.
 
 ### Agent memory
 

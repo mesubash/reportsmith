@@ -11,10 +11,16 @@ limits:
   max_days: 92               # ask before reporting on a longer range
   max_items: 40              # above this, summarize by week/month instead of listing
 
+scope:                       # which work counts; default = current repo
+  include: [.]               # e.g. [~/Developer/work]
+  exclude: []
+
 sources:
   git:
-    repos: [.]               # paths or globs, e.g. ~/code/*
+    repos: auto              # auto = every repo under scope; or list paths/globs
     author: auto             # auto = `git config user.email`
+  sessions: auto             # agent session logs under scope (Claude Code, Codex)
+  memory: auto               # memory MCP such as claude-mem, if connected
 
 reports:
   standup:
