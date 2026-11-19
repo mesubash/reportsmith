@@ -3,6 +3,8 @@
 # Per repo: .reportsmith.yml (overrides global, key by key)
 # Keep only the keys you change.
 
+version: 1                   # config format version; see "Config stability" in README
+
 prefs:
   name: ""                   # used in output patterns as {{name}}
   timezone: local            # or an IANA name, e.g. Europe/Berlin

@@ -22,7 +22,7 @@ Read whichever exist; later ones override earlier ones key by key:
 2. `~/.reportsmith/config.yml`
 3. `.reportsmith.yml` in the current repo root
 
-No config is fine. Ignore unknown keys, and mention them once.
+No config is fine. Ignore unknown keys, and mention them once. If `version` is higher than the one in `config.example.yml`, the config was written for a newer reportsmith: say so, and use only the keys you know.
 
 ## 2. Work out the request
 

@@ -18,6 +18,7 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 - End-to-end eval (`claude plugin eval`): a fixture repo and agent session for one day, graded on sources, period, dedupe and honesty.
 
 ### Changed
+- Config format is now versioned (`version: 1`) with a stability promise.
 - The skill moved to `skills/reportsmith/`. Reinstall or update your symlink.
 - `SKILL.md` is now the workflow only; source and publishing detail moved to `sources.md` and `publishing.md`.
 

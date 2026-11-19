@@ -85,6 +85,10 @@ Everything is optional. Copy [`config.example.yml`](skills/reportsmith/config.ex
 | Reports posted somewhere | `destinations` plus `reports.<kind>.publish` |
 | A new kind of report | Add `templates/<kind>.md`, then ask for it by name |
 
+### Config stability
+
+`version: 1` is the current config format. Within version 1, a key never changes meaning or disappears; a renamed key keeps working under its old name, with a note, until the next format version. Anything that breaks existing configs bumps `version` and is listed in the changelog with the change you need to make.
+
 ## Run on a schedule
 
 Any agent with a non-interactive mode can run reportsmith from cron or CI. Set `publish.confirm: false` in that run's config, and allow the tools it needs: Bash (for `git` and `python3`) and the MCP tools of your destinations.
