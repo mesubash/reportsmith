@@ -81,3 +81,10 @@ git -C <repo> log --all --no-merges \
 - **changelog:** use the range instead, all authors:
   `git -C <repo> log --no-merges --pretty='%h|%s' <last-tag>..HEAD`
   (`<last-tag>` = `git describe --tags --abbrev=0`; no tags → ask for a range.) Drop chore, CI and merge-only commits unless the user asks for them.
+
+## 5. Output
+
+After the user approves the preview:
+
+- Write the report to `<output.dir>/<kind>-<period>.md` (default dir `~/.reportsmith/out`; create it if missing). Ask before overwriting an existing file.
+- Print the path and the report so the user can copy it.
