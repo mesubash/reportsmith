@@ -84,6 +84,21 @@ Everything is optional. Copy [`config.example.yml`](skills/reportsmith/config.ex
 | Reports posted somewhere | `destinations` plus `reports.<kind>.publish` |
 | A new kind of report | Add `templates/<kind>.md`, then ask for it by name |
 
+## Run on a schedule
+
+Any agent with a non-interactive mode can run reportsmith from cron or CI. Set `publish.confirm: false` in that run's config, and allow the tools it needs: Bash (for `git` and `python3`) and the MCP tools of your destinations.
+
+```sh
+# Claude Code, every Friday at 17:00
+0 17 * * 5  cd ~/work && claude -p "weekly report for this week, publish" \
+  --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(gh:*)" "mcp__slack"
+
+# Codex
+0 17 * * 5  codex exec -C ~/work "weekly report for this week, publish"
+```
+
+Release notes on a tag can run the same way in CI, with the skill checked out and `gh` signed in. In unattended runs reportsmith never asks: if something is missing (scope, range, an MCP server), it stops and says why.
+
 ## Non-goals
 
 - Activity tracking, time tracking, productivity metrics.
