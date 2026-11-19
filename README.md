@@ -73,7 +73,14 @@ The skill is the folder `skills/reportsmith/`. Install it whichever way your age
 
 Older Claude Code versions: `/plugin marketplace add mesubash/reportsmith`, then `/plugin install reportsmith@reportsmith`.
 
-**Any agent with Agent Skills support (Claude Code, Codex, and others):** copy or link the skill folder into the agent's skills directory.
+**Codex (built-in skill installer):**
+
+```sh
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo mesubash/reportsmith --path skills/reportsmith --name reportsmith
+```
+
+**Any agent with Agent Skills support:** copy or link the skill folder into the agent's skills directory.
 
 ```sh
 git clone https://github.com/mesubash/reportsmith.git
