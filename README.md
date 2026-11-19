@@ -27,6 +27,31 @@ conversation          ─┘                          └─► shell command (e
 - **Works with any destination:** publishing goes through whatever MCP servers you have connected. Adding a destination means adding config, not code.
 - **Private by default:** redaction before preview, nothing published without confirmation unless you turn that off.
 
+## Install
+
+reportsmith is a folder with a `SKILL.md`. Put it where your agent looks for skills:
+
+```sh
+git clone git@github.com:mesubash/reportsmith.git
+```
+
+| Agent | Location |
+|---|---|
+| Claude Code | `~/.claude/skills/reportsmith/` (all projects) or `.claude/skills/reportsmith/` (one repo) |
+| Codex | `~/.codex/skills/reportsmith/` |
+| Other agents with Agent Skills support | Their skills directory (see the agent's docs) |
+| Agents without skill support | Keep the folder anywhere and add to `AGENTS.md`: *"For standups, status reports or changelogs, follow `<path>/reportsmith/SKILL.md`."* |
+
+Example, Claude Code:
+
+```sh
+git clone git@github.com:mesubash/reportsmith.git ~/.claude/skills/reportsmith
+```
+
+Then ask your agent: *"standup"*, *"weekly report for my manager"*, *"changelog since v1.2"*.
+
+Optional: copy `config.example.yml` to `~/.reportsmith/config.yml` and edit it. Put your own templates in `~/.reportsmith/templates/<kind>.md`.
+
 ## Non-goals
 
 - Activity tracking, time tracking, productivity metrics.
