@@ -1,45 +1,103 @@
-# reportsmith
+<p align="center">
+  <img src="assets/banner.svg" alt="reportsmith: standups, weekly reports, changelogs and release notes from git and your coding-agent sessions" width="100%">
+</p>
 
-**Standups, daily logs, weekly and monthly reports, changelogs and release notes, written from your git commits and your AI coding-agent sessions.**
+<p align="center">
+  <a href="https://github.com/mesubash/reportsmith/releases/latest"><img src="https://img.shields.io/github/v/release/mesubash/reportsmith?label=release&color=58a6ff" alt="Latest release"></a>
+  <a href="https://github.com/mesubash/reportsmith/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/mesubash/reportsmith/test.yml?branch=main&label=tests" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/mesubash/reportsmith?color=3fb950" alt="MIT license"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent%20Skill-SKILL.md-8957e5" alt="Agent Skill"></a>
+</p>
 
-reportsmith is an open [Agent Skill](https://agentskills.io) (`SKILL.md`) for **Claude Code**, **Codex**, **opencode** and other AI coding agents. Point it at a folder and a period ("standup", "weekly report for last week", "changelog since v1.2") and it gathers what you did from git, from the session logs your agents already keep, and optionally from PRs, tickets and agent memory. It writes the report in plain human wording, or in your own style, and can publish it through any MCP server (Slack, Notion, Plane, Google Drive and more), a webhook or a command. It is also packaged as a Claude Code plugin.
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#example">Example</a> ·
+  <a href="#use">Use</a> ·
+  <a href="#configure">Configure</a> ·
+  <a href="SECURITY.md">Privacy</a> ·
+  <a href="CONTRIBUTING.md">Contribute</a>
+</p>
 
-No server, no database, no tracking: it runs when you ask, makes a report, and stops.
+**reportsmith** writes your standups, daily logs, weekly and monthly reports, changelogs and release notes. It reads what you actually did in a folder: your git commits **and the session logs your coding agents already keep**, so work that never reached a commit (incidents, reviews, server fixes, investigations) shows up too.
 
-> **Status:** v0.2.1, early release. Feedback and recipes for more tools are welcome.
+It is an open [Agent Skill](https://agentskills.io) for **Claude Code**, **Codex**, **opencode** and other AI coding agents. Reports come out in plain human wording, or in your own style, and can be published through any MCP server (Slack, Notion, Plane, Google Drive and more). No server, no database, no tracking: it runs when you ask, makes a report, and stops.
 
-## Why
+## Install
 
-Tickets show only part of the work. Code reviews, audits, database fixes, incidents and helping teammates rarely land in a ticket, so they disappear from status updates. Your agent can already see your repos, your PRs and (through MCP) your tracker, chat and wiki. reportsmith turns that into the report you need, in the format your team wants.
+Pick your agent and copy one block.
 
-## What it does
+### Claude Code
+
+Run inside Claude Code:
 
 ```
-scope: ~/work, any period
-sources                         render                     publish
-───────                         ──────                     ───────
-git (every repo in scope)  ─┐                          ┌─► file (default)
-agent sessions in scope    ─┤                          ├─► any MCP tool: Slack, Notion,
-  (Claude Code, Codex,      ├─► template + config  ─►  │    Confluence, Jira, Linear, Plane, …
-   opencode)                │    preview / confirm     │
-agent memory (claude-mem)  ─┤                          ├─► webhook
-PRs, tickets, notes        ─┘                          └─► shell command (e.g. gh release)
+/plugin marketplace add mesubash/reportsmith
 ```
 
-Most real work never reaches a commit: triage, incident handling, server fixes, reviews, investigations. It does happen in agent sessions. reportsmith reads the session logs your agents already keep on disk, filtered to the folder you choose, so one report covers work done in Claude Code, Codex and opencode together.
+```
+/plugin install reportsmith@reportsmith
+```
 
-- **Any scope:** `~/work/` for your job, `~/side-project/` for yourself, one folder per client. Repos under it are found automatically.
-- **Any period:** a day, week, month, quarter, `last 10 days`, or `Nov 1..Nov 15`, with a threshold that switches long ranges to weekly or monthly roll-ups.
-- **Report kinds:** standup, daily, weekly, monthly, changelog, release notes, or your own.
-- **Honest:** never invents items; something an agent was asked to do counts as done only if a commit or the agent's answer confirms it.
-- **Reads like you wrote it:** plain wording rules built in, and an optional `style.sample` of your own past reports to copy your voice.
-- **Customizable through files only:** templates are markdown, config is YAML, per repo or global.
-- **Works with any destination:** publishing goes through whatever MCP servers you have connected. Adding a destination means adding config, not code.
-- **Private by default:** redaction before preview, nothing published without confirmation unless you turn that off.
+<details>
+<summary>Without the plugin system</summary>
+
+```sh
+git clone https://github.com/mesubash/reportsmith.git ~/.reportsmith-src
+ln -s ~/.reportsmith-src/skills/reportsmith ~/.claude/skills/reportsmith
+```
+
+</details>
+
+### Codex
+
+Uses Codex's built-in skill installer:
+
+```sh
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py --repo mesubash/reportsmith --path skills/reportsmith --name reportsmith
+```
+
+### opencode
+
+```sh
+git clone https://github.com/mesubash/reportsmith.git ~/.reportsmith-src
+mkdir -p ~/.config/opencode/skills
+ln -s ~/.reportsmith-src/skills/reportsmith ~/.config/opencode/skills/reportsmith
+```
+
+opencode also loads skills from `~/.claude/skills/`, so if you installed it for Claude Code without the plugin system, opencode already has it.
+
+### Other agents
+
+Any agent that reads Agent Skills (`SKILL.md`), with the [skills CLI](https://skills.sh):
+
+```sh
+npx skills add mesubash/reportsmith
+```
+
+<details>
+<summary>Agents without skill support</summary>
+
+Clone the repo anywhere and add this line to your `AGENTS.md`:
+
+```
+For standups, status reports, changelogs or release notes, follow ~/.reportsmith-src/skills/reportsmith/SKILL.md
+```
+
+</details>
+
+**Requirements:** `git` and `python3` (3.10 or newer, standard library only). `gh` is used for PRs and reviews if you have it.
+
+### Try it
+
+In any repo, ask your agent:
+
+```
+standup
+```
 
 ## Example
 
-You ask: *"standup for 2026-03-10, scope ~/work/app"*. That day the repo has two of your commits (one cherry-picked onto a second branch), a teammate's commit, and a commit from the next day. You also had a Claude Code session that restarted a stuck worker and was then asked about a failed backup.
+You ask: *"standup for 2026-03-10, scope ~/work/app"*. That day the repo has two of your commits (one cherry-picked onto a second branch), a teammate's commit and a commit from the next day. You also had a Claude Code session that restarted a stuck worker and was then asked about a failed backup.
 
 reportsmith writes:
 
@@ -59,51 +117,41 @@ To confirm
   was found or whether it was fixed.
 ```
 
-The cherry-picked fix shows up once, the teammate's commit and the next day's commit are left out, the session's restart shows up even though it never reached git, and the backup question is not claimed as done. This is the fixture in [`evals/standup-fixed-day`](evals/standup-fixed-day).
-
-## Install
-
-The skill is the folder `skills/reportsmith/`. Install it whichever way your agent supports.
-
-**Claude Code (plugin):**
-
-```
-/plugin install reportsmith --marketplace mesubash/reportsmith
-```
-
-Older Claude Code versions: `/plugin marketplace add mesubash/reportsmith`, then `/plugin install reportsmith@reportsmith`.
-
-**Codex (built-in skill installer):**
-
-```sh
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo mesubash/reportsmith --path skills/reportsmith --name reportsmith
-```
-
-**Any agent with Agent Skills support:** copy or link the skill folder into the agent's skills directory.
-
-```sh
-git clone https://github.com/mesubash/reportsmith.git
-ln -s "$PWD/reportsmith/skills/reportsmith" ~/.claude/skills/reportsmith   # Claude Code
-ln -s "$PWD/reportsmith/skills/reportsmith" ~/.codex/skills/reportsmith    # Codex
-```
-
-Other agents: use their skills directory (see the agent's docs).
-
-**Agents without skill support:** keep the folder anywhere and add one line to `AGENTS.md`: *"For standups, status reports, changelogs or release notes, follow `<path>/skills/reportsmith/SKILL.md`."*
-
-Requirements: `git`, and `python3` (3.10 or newer, standard library only) for reading agent sessions. `gh` is used for PRs and reviews if installed.
+The cherry-picked fix appears once, the teammate's commit and the next day's commit are left out, the restart shows up although it never reached git, and the backup question is not claimed as done. This exact case runs as an end-to-end eval in [`evals/standup-fixed-day`](evals/standup-fixed-day).
 
 ## Use
 
 Ask in plain words:
 
-- *"standup"*
-- *"what did I do yesterday in ~/work/api"*
-- *"weekly report for my manager, last week, short"*
-- *"monthly report for October, scope ~/clients/acme"*
-- *"changelog since v1.2"*, *"release notes for v2.0"*
-- *"daily log, then post it to #eng"* (needs a Slack MCP server and a destination in config)
+| You say | You get |
+|---|---|
+| `standup` | yesterday and today, short |
+| `what did I do yesterday in ~/work/api` | one day, one repo |
+| `weekly report for my manager, last week` | outcomes and risks, no code detail |
+| `monthly report for October, scope ~/clients/acme` | one client, rolled up by theme |
+| `changelog since v1.2` / `release notes for v2.0` | user-facing changes from the tag range |
+| `daily log, then post it to #eng` | publishes after you approve the preview |
+
+Any period works: a day, a week, a month, a quarter, `last 10 days`, or `Nov 1 to Nov 15`.
+
+## What it reads
+
+```
+scope: a folder, any period
+sources                         render                     publish
+───────                         ──────                     ───────
+git (every repo in scope)  ─┐                          ┌─► file (default)
+agent sessions in scope    ─┤                          ├─► any MCP tool: Slack, Notion,
+  (Claude Code, Codex,      ├─► template + config  ─►  │    Plane, Google Drive, …
+   opencode)                │    preview / confirm     │
+agent memory (claude-mem)  ─┤                          ├─► webhook
+PRs, tickets, notes        ─┘                          └─► shell command (e.g. gh release)
+```
+
+- **Folder scope.** `~/work` for your job, `~/side-project` for yourself, one folder per client. Every repo underneath is found automatically.
+- **Honest.** Never invents items. Something an agent was asked to do counts as done only if a commit or the agent's final answer confirms it.
+- **Reads like you wrote it.** Plain-wording rules are built in, and `style.sample` can point at your own past reports to copy your voice.
+- **Private by default.** Secrets and IPs are removed before drafting, and nothing is published without your approval. See [SECURITY.md](SECURITY.md).
 
 ## Configure
 
@@ -112,49 +160,63 @@ Everything is optional. Copy [`config.example.yml`](skills/reportsmith/config.ex
 | You want | Set |
 |---|---|
 | Only count work in some folders | `scope.include`, `scope.exclude` |
-| Reports to sound like you | `style.sample` (your past reports), `style.voice`, `style.rules` |
-| Your own report format | `templates_dir`, or files in `~/.reportsmith/templates/<kind>.md` |
-| Reports saved in your own layout | `reports.<kind>.output` with `{{yyyy}}/{{mm}}/{{dd}}`-style patterns |
-| Reports posted somewhere | `destinations` plus `reports.<kind>.publish` |
-| A new kind of report | Add `templates/<kind>.md`, then ask for it by name |
+| Reports that sound like you | `style.sample`, `style.voice`, `style.rules` |
+| Your own report format | `templates_dir`, or `~/.reportsmith/templates/<kind>.md` |
+| Reports saved in your own layout | `reports.<kind>.output`, e.g. `~/notes/{{yyyy}}/{{mm}}/{{dd}}.md` |
+| Reports posted somewhere | `destinations` and `reports.<kind>.publish` ([how](skills/reportsmith/publishing.md)) |
+| A new kind of report | add `templates/<kind>.md`, then ask for it by name |
 
-### Config stability
+<details>
+<summary>Publishing destinations</summary>
 
-`version: 1` is the current config format. Within version 1, a key never changes meaning or disappears; a renamed key keeps working under its old name, with a note, until the next format version. Anything that breaks existing configs bumps `version` and is listed in the changelog with the change you need to make.
+Destinations are set once and used by name. Recipes exist for Slack, Notion, GitHub, Plane, Google Drive, Claude Docs and Discord; any other MCP server works through the [generic recipe](skills/reportsmith/destinations/_generic.md).
 
-## Run on a schedule
+```yaml
+destinations:
+  team-chat: { via: mcp, server: slack, action: send message, channel: "#standup" }
+  wiki:      { via: mcp, server: notion, action: create page, parent: "Weekly reports" }
+  hook:      { via: webhook, url_env: REPORT_WEBHOOK }
 
-Any agent with a non-interactive mode can run reportsmith from cron or CI. Set `publish.confirm: false` in that run's config, and allow the tools it needs: Bash (for `git` and `python3`) and the MCP tools of your destinations.
+reports:
+  standup: { publish: [team-chat] }
+  weekly:  { publish: [wiki] }
+```
+
+</details>
+
+<details>
+<summary>Run on a schedule (cron, CI)</summary>
+
+Set `publish.confirm: false` in that run's config, and allow the tools it needs.
 
 ```sh
 # Claude Code, every Friday at 17:00
-0 17 * * 5  cd ~/work && claude -p "weekly report for this week, publish" \
-  --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(gh:*)" "mcp__slack"
+0 17 * * 5  cd ~/work && claude -p "weekly report for this week, publish" --allowedTools "Bash(git:*)" "Bash(python3:*)" "Bash(gh:*)" "mcp__slack"
+```
 
-# Codex
+```sh
+# Codex, every Friday at 17:00
 0 17 * * 5  codex exec -C ~/work "weekly report for this week, publish"
 ```
 
-Release notes on a tag can run the same way in CI, with the skill checked out and `gh` signed in. In unattended runs reportsmith never asks: if something is missing (scope, range, an MCP server), it stops and says why.
+In unattended runs reportsmith never asks: if something is missing (scope, range, an MCP server), it stops and says why.
 
-## Non-goals
+</details>
 
-- Activity tracking, time tracking, productivity metrics.
-- Storing a history of your work between runs.
-- A hosted service.
+<details>
+<summary>Config stability</summary>
 
-## Roadmap
+`version: 1` is the current config format. Within version 1, a key never changes meaning or disappears; a renamed key keeps working under its old name, with a note, until the next format version. Anything that breaks existing configs bumps `version` and is listed in the [changelog](CHANGELOG.md).
 
-Tracked as [milestones](../../milestones):
+</details>
 
-| Version | Scope |
-|---|---|
-| v0.1 | Core skill, config loading, standup/weekly/changelog templates, git source, preview, file output, install docs |
-| v0.2 | Publishing: generic MCP publisher, webhook, command; Slack/Notion/GitHub recipes |
-| v0.3 | More sources (PRs/reviews, ticket MCP, notes file) and redaction |
-| v0.4 | Unattended runs: cron, CI and GitHub Action examples |
-| v0.5 | More templates and destination recipes, evals |
-| v1.0 | Stable config schema, docs, public release and directory listings |
+## Not included, on purpose
+
+Activity or time tracking, productivity metrics, a stored history of your work, a hosted service.
+
+## Contributing
+
+New destination recipes (Jira, Confluence, Linear) and session readers (Cursor) are the most useful contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [open issues](https://github.com/mesubash/reportsmith/issues).
 
 ## Credits
 
@@ -162,4 +224,4 @@ Writing rules adapted from [Wikipedia: Signs of AI writing](https://en.wikipedia
 
 ## License
 
-MIT
+[MIT](LICENSE)

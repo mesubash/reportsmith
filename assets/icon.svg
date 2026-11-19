@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="reportsmith">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0D1117"/><stop offset="1" stop-color="#161B2E"/></linearGradient></defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<rect x="96" y="104" width="320" height="304" rx="28" fill="#161B22" stroke="#30363D" stroke-width="6"/>
+<rect x="136" y="148" width="150" height="22" rx="11" fill="#E6EDF3"/>
+<circle cx="154" cy="234" r="18" fill="#3FB950"/><path d="M145 234 l7 7 l12 -14" stroke="#0D1117" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="190" y="225" width="186" height="18" rx="9" fill="#30363D"/>
+<circle cx="154" cy="296" r="18" fill="#3FB950"/><path d="M145 296 l7 7 l12 -14" stroke="#0D1117" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="190" y="287" width="150" height="18" rx="9" fill="#30363D"/>
+<circle cx="154" cy="358" r="16" fill="none" stroke="#D29922" stroke-width="5"/>
+<rect x="190" y="349" width="170" height="18" rx="9" fill="#30363D"/>
+</svg>
