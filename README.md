@@ -58,7 +58,7 @@ Other agents: use their skills directory (see the agent's docs).
 
 **Agents without skill support:** keep the folder anywhere and add one line to `AGENTS.md`: *"For standups, status reports, changelogs or release notes, follow `<path>/skills/reportsmith/SKILL.md`."*
 
-Requirements: `git`, and `python3` (3.8+, standard library only) for reading agent sessions. `gh` is used for PRs and reviews if installed.
+Requirements: `git`, and `python3` (3.10 or newer, standard library only) for reading agent sessions. `gh` is used for PRs and reviews if installed.
 
 ## Use
 
