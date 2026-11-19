@@ -31,6 +31,26 @@ Work out each field from the user's words first, then `reports.<kind>` in config
 
 The user can override anything in the request, e.g. "weekly for my manager, last week, short".
 
+### Period
+
+Any kind can cover any period. Resolve the user's words to an exact `from`/`to` date range (inclusive, in `prefs.timezone`):
+
+| User says | Range |
+|---|---|
+| `yesterday`, `today`, `2026-11-03`, `Nov 3`, `last Friday` | that single day |
+| `this week`, `last week`, `week 45`, `week of Nov 3` | that week (start day from `prefs.week_starts`) |
+| `this month`, `last month`, `October`, `2026-10` | that calendar month |
+| `Q3`, `last quarter`, `2026` | that quarter or year |
+| `last 10 days`, `past 2 weeks` | ending today |
+| `Nov 1 to Nov 15`, `2026-11-01..2026-11-15`, `since Nov 1` | the explicit range (`since` ends today) |
+
+- "Yesterday" means the previous calendar day. For a standup, if that day had no activity and was a weekend, use the last working day instead and say so.
+- For git, pass `--since="<from> 00:00" --until="<to> 23:59:59"`. A bare date in `--until` means midnight at the start of that day, which drops the whole last day.
+- State the resolved range in the report header, e.g. `2026-11-18 (Wed)` or `2026-11-01 → 2026-11-15`.
+- A range in the future, or `from` after `to`: ask; don't guess.
+
+**Threshold:** `limits.max_days` (default 92) caps the range. Longer → tell the user the size and ask to confirm or narrow it. When gathered items exceed `limits.max_items` (default 40), summarize at a higher level instead of listing everything: group by week for ranges over 14 days, by month for ranges over 62 days, keeping the top highlights per group.
+
 ## 2. Gather
 
 Collect raw material for the period from every available source (section "Sources"). Also use anything the user said in this conversation about their work. Skip a missing source without complaint.
