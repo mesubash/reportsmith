@@ -88,7 +88,7 @@ Read every available source for the period and scope; `sources.md` says how. Ski
 
 ## 4. Draft
 
-Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmith/templates/<kind>.md` · `templates/<kind>.md` here. A kind with no template: use the `weekly.md` structure and say the user can add one. Placeholders are `{{date}}`, `{{period}}`, `{{scope}}` and `{{version}}`. Prose instructions and `<!-- comments -->` in a template are for you; don't copy them into the output.
+Template lookup, first found wins: `<templates_dir>/<kind>.md` · `~/.reportsmith/templates/<kind>.md` · `templates/<kind>.md` here. A kind with no template: use the `weekly.md` structure and say the user can add one. Placeholders are `{{date}}`, `{{period}}`, `{{scope}}`, `{{version}}` and `{{title}}`. Prose instructions and `<!-- comments -->` in a template are for you; don't copy them into the output.
 
 Rules:
 

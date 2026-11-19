@@ -1,18 +1,17 @@
-<!-- Weekly update. Group related items; lead with what matters most to the audience. -->
-# Weekly update — {{period}}
+<!-- Weekly update. Lead with what matters most to the audience. Group related items into one bullet. -->
+# Weekly update, {{period}}
 
 ## Highlights
-<!-- 1–3 most important outcomes this week -->
+<!-- One to three outcomes that matter most this week. -->
 
 ## Done
-<!-- Ticketed work. Cite ticket IDs. -->
+<!-- Ticketed work, grouped by theme. Cite ticket IDs. -->
 
-## Beyond tickets
+## Outside tickets
 <!-- Reviews, audits, DB changes, incidents, support, research -->
 
 ## Decisions
-<!-- Decisions made and why. Omit if none. -->
 
-## Blockers & risks
+## Blockers and risks
 
 ## Next week

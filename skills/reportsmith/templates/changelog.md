@@ -1,5 +1,5 @@
-<!-- Keep a Changelog style. User-facing wording. Group by type; omit empty groups. -->
-## [{{version}}] — {{date}}
+<!-- Keep a Changelog format (keepachangelog.com). User-facing wording. Omit empty groups. -->
+## [{{version}}] - {{date}}
 
 ### Added
 
